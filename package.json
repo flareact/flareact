@@ -31,9 +31,12 @@
     "webpack-cli": "^3.3.12"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^14.0.0",
+    "@rollup/plugin-node-resolve": "^8.4.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "rollup": "^2.23.0",
+    "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-peer-deps-external": "^2.2.3"
   }
 }
