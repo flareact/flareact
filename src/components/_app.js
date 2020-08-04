@@ -1,3 +1,4 @@
+import React from "react";
 import { useRouter } from "../router";
 
 export default function App({ Component: initialComponent, pageProps }) {

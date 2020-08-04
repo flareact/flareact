@@ -15,3 +15,5 @@ export async function getPageProps(page) {
 
   return {};
 }
+
+export class PageNotFoundError extends Error {}

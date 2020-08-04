@@ -1,8 +1,9 @@
+import React from "react";
 import ReactDOMServer from "react-dom/server";
 import Document from "../components/_document";
 import { RouterProvider } from "../router";
 import App from "../components/_app";
-import { getPage, getPageProps } from "./pages";
+import { getPage, getPageProps, PageNotFoundError } from "./pages";
 
 function pageIsApi(page) {
   return /^\/api\/.+/.test(page);
@@ -62,5 +63,3 @@ export async function handleRequest(event, fallback) {
     throw e;
   }
 }
-
-class PageNotFoundError extends Error {}

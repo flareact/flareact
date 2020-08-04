@@ -1,6 +1,10 @@
 import { handleRequest } from ".";
+import {
+  getAssetFromKV,
+  mapRequestToAsset,
+} from "@cloudflare/kv-asset-handler";
 
-export async function handleEvent(event) {
+export async function handleEvent(event, DEBUG) {
   let options = {};
 
   /**

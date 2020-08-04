@@ -1,3 +1,4 @@
+import React from "react";
 import { RouterProvider } from "../../router";
 import App from "../../components/_app";
 

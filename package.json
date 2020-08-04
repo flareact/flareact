@@ -31,6 +31,7 @@
     "webpack-cli": "^3.3.12"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.11.0",
     "@rollup/plugin-commonjs": "^14.0.0",
     "@rollup/plugin-node-resolve": "^8.4.0",
     "react": "^16.13.1",
