@@ -1,7 +1,7 @@
 export async function getPage(page) {
   try {
-    // TODO: Point at user's pages dir
-    return await import(`../pages/${page.replace(/^\//, "")}.js`);
+    // TODO: Do this better
+    return await import(`../../../pages/${page.replace(/^\//, "")}.js`);
   } catch (e) {
     throw new PageNotFoundError();
   }
