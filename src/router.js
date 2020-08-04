@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { getPage } from "./worker";
+import { getPage } from "./worker/pages";
 
 const RouterContext = React.createContext();
 

@@ -2,26 +2,10 @@ import ReactDOMServer from "react-dom/server";
 import Document from "../components/_document";
 import { RouterProvider } from "../router";
 import App from "../components/_app";
-
-export async function getPage(page) {
-  try {
-    return await import(`../pages/${page.replace(/^\//, "")}.js`);
-  } catch (e) {
-    throw new PageNotFoundError();
-  }
-}
+import { getPage, getPageProps } from "./pages";
 
 function pageIsApi(page) {
   return /^\/api\/.+/.test(page);
-}
-
-export async function getPageProps(page) {
-  if (page.getStaticProps) {
-    const { props } = await page.getStaticProps();
-    return props;
-  }
-
-  return {};
 }
 
 export async function handleRequest(event, fallback) {
