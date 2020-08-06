@@ -8,7 +8,14 @@ const initialData = JSON.parse(
 );
 
 // 😩
-const context = require.context("../../../../pages/", true, /\.js$/);
+let context = require.context("../../../../pages/", true, /\.js$/);
+
+if (module.hot) {
+  module.hot.accept(context.id, function () {
+    context = require.context("../../../../pages/", true, /\.js$/);
+    render();
+  });
+}
 
 async function render() {
   // TODO: Find a smarter way to load this for initial page view, like with script tag

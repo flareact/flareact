@@ -15,10 +15,10 @@ console.log("Starting Flareact dev server...");
 
 concurrently(
   [
-    { command: "wrangler dev", name: "wrangler" },
+    { command: "WORKER_DEV=true wrangler dev", name: "wrangler" },
     {
       command:
-        "webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode development --watch",
+        "webpack-dev-server --config node_modules/flareact/configs/webpack.client.config.js --mode development",
       name: "client",
     },
   ],

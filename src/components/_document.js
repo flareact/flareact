@@ -1,5 +1,7 @@
 import React from "react";
 
+const dev = typeof DEV !== "undefined" && !!DEV;
+
 export default function Document({ children, initialData }) {
   return (
     <html>
@@ -13,7 +15,9 @@ export default function Document({ children, initialData }) {
           type="text/plain"
           data-json={JSON.stringify(initialData)}
         ></script>
-        <script src="/client.js"></script>
+        <script
+          src={dev ? "http://localhost:8080/client.js" : "/client.js"}
+        ></script>
       </body>
     </html>
   );
