@@ -7,6 +7,7 @@ module.exports = {
   target: "webworker",
   entry: path.resolve(process.cwd(), "./index.js"),
   plugins: [
+    ...baseConfig.plugins,
     new CopyPlugin([
       {
         from: path.resolve(process.cwd(), "public"),

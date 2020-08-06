@@ -5,6 +5,8 @@ export default function Document({ children, initialData }) {
     <html>
       <head>
         <title>Flareact</title>
+        {/* TODO: Find way to not show this when there are no styles */}
+        <link href="/main.css" rel="stylesheet" />
       </head>
       <body>
         <div id="__flareact">{children}</div>
