@@ -2,8 +2,8 @@ import React from "react";
 import ReactDOMServer from "react-dom/server";
 import Document from "../components/_document";
 import { RouterProvider } from "../router";
-import App from "../components/_app";
 import { getPage, getPageProps, PageNotFoundError } from "./pages";
+import AppProvider from "../components/AppProvider";
 
 function pageIsApi(page) {
   return /^\/api\/.+/.test(page);
@@ -46,7 +46,11 @@ export async function handleRequest(event, context, fallback) {
     const html = ReactDOMServer.renderToString(
       <Document initialData={props}>
         <RouterProvider initialUrl={event.request.url}>
-          <App Component={Component} pageProps={props} />
+          <AppProvider
+            Component={Component}
+            pageProps={props}
+            context={context}
+          />
         </RouterProvider>
       </Document>
     );

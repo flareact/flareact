@@ -1,16 +1,13 @@
+import App from "../components/_app";
+
 export function getPage(pagePath, context) {
   try {
     return context(`.${pagePath}.js`);
   } catch (e) {
-    throw new PageNotFoundError();
-  }
-}
+    if (pagePath === "/_app") {
+      return { default: App };
+    }
 
-export async function getClientPage(pagePath) {
-  try {
-    console.log(`${process.cwd()}pages/${pagePath}.js`);
-    return import(`${process.cwd()}pages/${pagePath}.js`);
-  } catch (e) {
     throw new PageNotFoundError();
   }
 }
