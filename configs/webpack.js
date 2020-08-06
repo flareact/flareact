@@ -1,5 +1,10 @@
 const path = require("path");
+const fs = require("fs");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+
+function fileExistsInCwd(file) {
+  return fs.existsSync(path.join(process.cwd(), file));
+}
 
 module.exports = {
   baseConfig: {
@@ -27,7 +32,9 @@ module.exports = {
               loader: "postcss-loader",
               options: {
                 config: {
-                  path: path.resolve(__dirname),
+                  path: fileExistsInCwd("postcss.config.js")
+                    ? process.cwd()
+                    : path.resolve(__dirname),
                 },
               },
             },
