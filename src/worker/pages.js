@@ -1,7 +1,15 @@
-export async function getPage(page) {
+export function getPage(pagePath, context) {
   try {
-    // TODO: Do this better
-    return await import(`../../../pages/${page.replace(/^\//, "")}.js`);
+    return context(`.${pagePath}.js`);
+  } catch (e) {
+    throw new PageNotFoundError();
+  }
+}
+
+export async function getClientPage(pagePath) {
+  try {
+    console.log(`${process.cwd()}pages/${pagePath}.js`);
+    return import(`${process.cwd()}pages/${pagePath}.js`);
   } catch (e) {
     throw new PageNotFoundError();
   }

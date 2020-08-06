@@ -8,7 +8,12 @@ async function loadPageProps(pagePath) {
   return await res.json();
 }
 
-export function RouterProvider({ children, initialUrl, initialComponent }) {
+export function RouterProvider({
+  children,
+  initialUrl,
+  initialComponent,
+  context,
+}) {
   const { pathname: initialPathname } = new URL(initialUrl);
   const [pathname, setPathname] = useState(initialPathname);
   const [component, setComponent] = useState({
@@ -20,7 +25,7 @@ export function RouterProvider({ children, initialUrl, initialComponent }) {
     async function loadNewPage() {
       const pagePath = pathname === "/" ? "/index" : pathname;
 
-      const page = await getPage(pagePath);
+      const page = await getPage(pagePath, context);
       const { pageProps } = await loadPageProps(pagePath);
 
       setComponent({

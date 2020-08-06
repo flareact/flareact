@@ -4,7 +4,7 @@ import {
   mapRequestToAsset,
 } from "@cloudflare/kv-asset-handler";
 
-export async function handleEvent(event, DEBUG) {
+export async function handleEvent(event, context, DEBUG) {
   let options = {};
 
   /**
@@ -13,7 +13,7 @@ export async function handleEvent(event, DEBUG) {
    */
   // options.mapRequestToAsset = handlePrefix(/^\/docs/)
 
-  return await handleRequest(event, async () => {
+  return await handleRequest(event, context, async () => {
     try {
       if (DEBUG) {
         // customize caching

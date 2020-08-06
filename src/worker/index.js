@@ -9,14 +9,14 @@ function pageIsApi(page) {
   return /^\/api\/.+/.test(page);
 }
 
-export async function handleRequest(event, fallback) {
+export async function handleRequest(event, context, fallback) {
   const url = new URL(event.request.url);
   const { pathname } = url;
 
   try {
     if (pathname.startsWith("/_flareact")) {
       const pagePath = pathname.replace(/\/_flareact|\.json/g, "");
-      const page = await getPage(pagePath);
+      const page = getPage(pagePath, context);
       const props = await getPageProps(page);
 
       return new Response(
@@ -34,7 +34,7 @@ export async function handleRequest(event, fallback) {
 
     const pagePath = pathname === "/" ? "/index" : pathname;
 
-    const page = await getPage(pagePath);
+    const page = getPage(pagePath, context);
 
     if (pageIsApi(pagePath)) {
       return await page.default(event);
