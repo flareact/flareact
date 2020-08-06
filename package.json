@@ -9,10 +9,6 @@
     "configs"
   ],
   "license": "MIT",
-  "scripts": {
-    "build": "rollup -c",
-    "prepublishOnly": "yarn build"
-  },
   "peerDependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
