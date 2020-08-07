@@ -17,3 +17,5 @@ However, it's brand new! So it's also a bunch of these things:
 - Missing years worth of optimizations the Next.js team has implemented
 - Probably has a heavy bundle
 - Styles? Sort of borked right now
+
+[Check out the docs!](https://flareact.com)
