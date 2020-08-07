@@ -1,4 +1,4 @@
-![Flareact](./flareact.png)
+<img src="https://github.com/flareact/flareact/raw/master/flareact.png" alt="Flareact" width="350" />
 
 Flareact is an **edge-rendered React framework** powered by Cloudflare Workers.
 
