@@ -51,7 +51,7 @@ export function RouterProvider({
 
   useEffect(() => {
     function handlePopState(e) {
-      const { pathname: newPathname } = e.state;
+      const newPathname = e.state ? e.state.pathname : window.location.pathname;
 
       setPathname(newPathname);
     }
