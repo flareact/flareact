@@ -1,12 +1,13 @@
 {
   "name": "flareact",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "src/index.js",
   "module": "src/index.js",
   "description": "SSR React framework built for Cloudflare Workers",
   "files": [
     "src",
-    "configs"
+    "configs",
+    "link.js"
   ],
   "license": "MIT",
   "scripts": {
