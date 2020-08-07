@@ -14,6 +14,8 @@ const config = {
     contentBase: path.resolve(process.cwd(), "out"),
     hot: true,
     hotOnly: true,
+    stats: "errors-warnings",
+    noInfo: true,
     headers: {
       "access-control-allow-origin": "*",
     },

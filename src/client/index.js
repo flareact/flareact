@@ -13,11 +13,11 @@ let context = require.context("../../../../pages/", true, /\.js$/);
 if (module.hot) {
   module.hot.accept(context.id, function () {
     context = require.context("../../../../pages/", true, /\.js$/);
-    render();
+    render(Math.random());
   });
 }
 
-async function render() {
+async function render(key) {
   // TODO: Find a smarter way to load this for initial page view, like with script tag
   const { pathname } = window.location;
   const pagePath = pathname === "/" ? "/index" : pathname;
@@ -28,6 +28,7 @@ async function render() {
       pageProps={initialData}
       Component={page.default}
       context={context}
+      key={key}
     />,
     document.getElementById("__flareact")
   );

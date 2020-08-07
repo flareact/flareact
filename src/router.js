@@ -23,6 +23,11 @@ export function RouterProvider({
     pageProps: null,
   });
 
+  // If the context ever changes, wipe out the page cache
+  useEffect(() => {
+    pageCache = {};
+  }, [context]);
+
   useEffect(() => {
     async function loadNewPage() {
       const pagePath = pathname === "/" ? "/index" : pathname;

@@ -18,10 +18,10 @@ if (command === "dev") {
 
   concurrently(
     [
-      { command: "wrangler dev", name: "wrangler" },
+      { command: "WORKER_DEV=true wrangler dev", name: "wrangler" },
       {
         command:
-          "webpack-dev-server --config node_modules/flareact/configs/webpack.client.config.js --mode development",
+          "NODE_ENV=development webpack-dev-server --config node_modules/flareact/configs/webpack.client.config.js --mode development",
         name: "client",
       },
     ],
