@@ -8,6 +8,8 @@ async function loadPageProps(pagePath) {
   return await res.json();
 }
 
+let pageCache = {};
+
 export function RouterProvider({
   children,
   initialUrl,
@@ -25,13 +27,17 @@ export function RouterProvider({
     async function loadNewPage() {
       const pagePath = pathname === "/" ? "/index" : pathname;
 
-      const page = await getPage(pagePath, context);
-      const { pageProps } = await loadPageProps(pagePath);
+      if (!pageCache[pagePath]) {
+        const page = await getPage(pagePath, context);
+        const { pageProps } = await loadPageProps(pagePath);
 
-      setComponent({
-        Component: page.default,
-        pageProps,
-      });
+        pageCache[pagePath] = {
+          Component: page.default,
+          pageProps,
+        };
+      }
+
+      setComponent(pageCache[pagePath]);
     }
 
     loadNewPage();
