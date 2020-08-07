@@ -9,6 +9,9 @@
     "configs"
   ],
   "license": "MIT",
+  "scripts": {
+    "test": "jest"
+  },
   "peerDependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
@@ -40,6 +43,8 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-optional-chaining": "^7.11.0",
+    "babel-jest": "^26.2.2",
+    "jest": "^26.2.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   }
