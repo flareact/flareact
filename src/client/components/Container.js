@@ -1,6 +1,6 @@
 import React from "react";
 import { RouterProvider } from "../../router";
-import App from "../../components/_app";
+import AppProvider from "../../components/AppProvider";
 
 export default function Container({ Component, pageProps, context }) {
   return (
@@ -9,7 +9,11 @@ export default function Container({ Component, pageProps, context }) {
       initialComponent={Component}
       context={context}
     >
-      <App pageProps={pageProps} />
+      <AppProvider
+        Component={Component}
+        pageProps={pageProps}
+        context={context}
+      />
     </RouterProvider>
   );
 }

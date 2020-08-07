@@ -11,25 +11,53 @@ const concurrently = require("concurrently");
   }
 });
 
-console.log("Starting Flareact dev server...");
+const command = process.argv[2];
 
-concurrently(
-  [
-    { command: "WORKER_DEV=true wrangler dev", name: "wrangler" },
+if (command === "dev") {
+  console.log("Starting Flareact dev server...");
+
+  concurrently(
+    [
+      { command: "wrangler dev", name: "wrangler" },
+      {
+        command:
+          "webpack-dev-server --config node_modules/flareact/configs/webpack.client.config.js --mode development",
+        name: "client",
+      },
+    ],
     {
-      command:
-        "webpack-dev-server --config node_modules/flareact/configs/webpack.client.config.js --mode development",
-      name: "client",
-    },
-  ],
-  {
-    prefix: "name",
-    killOthers: ["failure"],
-    restartTries: 0,
-  }
-).then(
-  () => {},
-  (error) => {
-    console.error(error);
-  }
-);
+      prefix: "name",
+      killOthers: ["failure"],
+      restartTries: 0,
+    }
+  ).then(
+    () => {},
+    (error) => {
+      console.error(error);
+    }
+  );
+}
+
+if (command === "publish") {
+  console.log("Publishing your Flareact project to Cloudflare...");
+
+  concurrently(
+    [
+      {
+        command:
+          "webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode production && wrangler publish",
+        name: "publish",
+      },
+    ],
+    {
+      prefix: "name",
+      killOthers: ["failure"],
+      restartTries: 0,
+    }
+  ).then(
+    () => {},
+    (error) => {
+      console.error(error);
+    }
+  );
+}
