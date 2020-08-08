@@ -1,37 +1,40 @@
-const { baseConfig } = require("./webpack");
-const path = require("path");
 const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
+const path = require("path");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const projectDir = process.cwd();
 
-const config = {
-  ...baseConfig,
-  context: process.cwd(),
-  entry: "flareact/src/client/index.js",
-  output: {
-    filename: "client.js",
-    path: path.resolve(process.cwd(), "out"),
-  },
-  devServer: {
-    contentBase: path.resolve(process.cwd(), "out"),
-    hot: true,
-    hotOnly: true,
-    stats: "errors-warnings",
-    noInfo: true,
-    headers: {
-      "access-control-allow-origin": "*",
-    },
-  },
-  devtool: "source-map",
-  resolve: {
-    // Only necessary for localdev of flareact
-    alias: {
-      react: path.resolve(process.cwd(), "./node_modules/react"),
-    },
-  },
-};
+const workerConfig = require(path.join(projectDir, "webpack.config.js"));
 
 module.exports = (env, argv) => {
+  const config = {
+    ...workerConfig(env, argv),
+    context: projectDir,
+    // Override target to be a web web instead of webworker
+    target: "web",
+    // Override the entry point
+    entry: "flareact/src/client/index.js",
+    // Override the output
+    output: {
+      filename: "client.js",
+      path: path.resolve(projectDir, "out"),
+    },
+    // Override plugins
+    plugins: [new MiniCssExtractPlugin()],
+    devServer: {
+      contentBase: path.resolve(projectDir, "out"),
+      hot: true,
+      hotOnly: true,
+      stats: "errors-warnings",
+      noInfo: true,
+      headers: {
+        "access-control-allow-origin": "*",
+      },
+    },
+    devtool: "source-map",
+  };
+
   if (argv.mode === "development") {
-    config.plugins = [new ReactRefreshWebpackPlugin()];
+    config.plugins.push(new ReactRefreshWebpackPlugin());
 
     // TODO: Find better way to modify babel plugins
     config.module.rules[0].use.options.plugins.push(
