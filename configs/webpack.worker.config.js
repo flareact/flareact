@@ -1,24 +1,47 @@
-const { baseConfig } = require("./webpack.config");
+const baseConfig = require("./webpack.config");
 const CopyPlugin = require("copy-webpack-plugin");
 const path = require("path");
 const webpack = require("webpack");
-const DEV = !!process.env.WORKER_DEV;
+const { flareactConfig } = require("./utils");
+const defaultLoaders = require("./loaders");
 
-module.exports = {
-  ...baseConfig,
-  target: "webworker",
-  entry: path.resolve(process.cwd(), "./index.js"),
-  plugins: [
-    ...baseConfig.plugins,
+const dev = !!process.env.WORKER_DEV;
+const isServer = true;
+const projectDir = process.cwd();
+const flareact = flareactConfig(projectDir);
+
+module.exports = function (env, argv) {
+  let config = {
+    ...baseConfig({ dev, isServer }),
+    target: "webworker",
+    entry: path.resolve(projectDir, "./index.js"),
+  };
+
+  config.plugins.push(
     new CopyPlugin([
       {
-        from: path.resolve(process.cwd(), "public"),
-        to: path.resolve(process.cwd(), "out"),
+        from: path.resolve(projectDir, "public"),
+        to: path.resolve(projectDir, "out"),
       },
-    ]),
-    DEV &&
+    ])
+  );
+  if (dev) {
+    config.plugins.push(
       new webpack.DefinePlugin({
-        DEV,
-      }),
-  ].filter(Boolean),
+        DEV: dev,
+      })
+    );
+  }
+
+  if (flareact.webpack) {
+    config = flareact.webpack(config, {
+      dev,
+      isServer,
+      isWorker: isServer,
+      defaultLoaders: defaultLoaders({ dev, isServer }),
+      webpack,
+    });
+  }
+
+  return config;
 };

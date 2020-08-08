@@ -1,14 +1,12 @@
 const path = require("path");
-const fs = require("fs");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const DEV = !!process.env.WORKER_DEV || process.env.NODE_ENV === "development";
+const defaultLoaders = require("./loaders");
+const { fileExistsInDir } = require("./utils");
 
-function fileExistsInCwd(file) {
-  return fs.existsSync(path.join(process.cwd(), file));
-}
+module.exports = function ({ dev, isServer }) {
+  const loaders = defaultLoaders({ dev, isServer });
 
-module.exports = {
-  baseConfig: {
+  return {
     context: process.cwd(),
     plugins: [new MiniCssExtractPlugin()],
     stats: "errors-warnings",
@@ -17,18 +15,12 @@ module.exports = {
         {
           test: /\.js$/,
           exclude: /node_modules\/(?!(flareact)\/).*/,
-          use: {
-            loader: "babel-loader",
-            options: {
-              presets: ["@babel/preset-env", "@babel/preset-react"],
-              plugins: ["react-require", "@babel/plugin-transform-runtime"],
-            },
-          },
+          use: loaders.babel,
         },
         {
           test: /\.css$/,
           use: [
-            DEV
+            dev
               ? "style-loader"
               : {
                   loader: MiniCssExtractPlugin.loader,
@@ -41,7 +33,7 @@ module.exports = {
               loader: "postcss-loader",
               options: {
                 config: {
-                  path: fileExistsInCwd("postcss.config.js")
+                  path: fileExistsInDir(process.cwd(), "postcss.config.js")
                     ? process.cwd()
                     : path.resolve(__dirname),
                 },
@@ -51,5 +43,5 @@ module.exports = {
         },
       ],
     },
-  },
+  };
 };

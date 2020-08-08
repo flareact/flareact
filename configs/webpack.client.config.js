@@ -1,24 +1,26 @@
+const baseConfig = require("./webpack.config");
 const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const projectDir = process.cwd();
+const { flareactConfig } = require("./utils");
+const defaultLoaders = require("./loaders");
+const webpack = require("webpack");
 
-const workerConfig = require(path.join(projectDir, "webpack.config.js"));
+const projectDir = process.cwd();
+const flareact = flareactConfig(projectDir);
+const dev = process.env.NODE_ENV === "development";
+const isServer = false;
 
 module.exports = (env, argv) => {
   const config = {
-    ...workerConfig(env, argv),
+    ...baseConfig({ dev, isServer }),
     context: projectDir,
-    // Override target to be a web web instead of webworker
     target: "web",
-    // Override the entry point
     entry: "flareact/src/client/index.js",
-    // Override the output
     output: {
       filename: "client.js",
       path: path.resolve(projectDir, "out"),
     },
-    // Override plugins
     plugins: [new MiniCssExtractPlugin()],
     devServer: {
       contentBase: path.resolve(projectDir, "out"),
@@ -33,15 +35,20 @@ module.exports = (env, argv) => {
     devtool: "source-map",
   };
 
-  if (argv.mode === "development") {
+  if (dev) {
     config.plugins.push(new ReactRefreshWebpackPlugin());
 
-    // TODO: Find better way to modify babel plugins
-    config.module.rules[0].use.options.plugins.push(
-      require.resolve("react-refresh/babel")
-    );
-
     config.output.publicPath = "http://localhost:8080/";
+  }
+
+  if (flareact.webpack) {
+    return flareact.webpack(config, {
+      dev,
+      isServer,
+      isWorker: isServer,
+      defaultLoaders: defaultLoaders({ dev, isServer }),
+      webpack,
+    });
   }
 
   return config;
