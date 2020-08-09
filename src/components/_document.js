@@ -7,7 +7,7 @@ export default function Document({ initialData, helmet }) {
   const bodyAttrs = helmet.bodyAttributes.toComponent();
 
   return (
-    <html {...htmlAttrs}>
+    <html lang="en" {...htmlAttrs}>
       <head>
         <meta name="viewport" content="width=device-width" />
         <meta charset="utf-8" />
