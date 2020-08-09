@@ -69,8 +69,10 @@ export async function getPageProps(page) {
 
   const params = page.params || {};
 
-  if (page.getStaticProps) {
-    const { props } = await page.getStaticProps({ params });
+  const fetcher = page.getEdgeProps || page.getStaticProps;
+
+  if (fetcher) {
+    const { props } = await fetcher({ params });
 
     pageProps = {
       ...props,

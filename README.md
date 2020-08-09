@@ -8,7 +8,7 @@ That means it supports nice API patterns like:
 
 - File-based routing
 - Dynamic page paths
-- Data fetching for page props using `getStaticProps`
+- Data fetching for page props using `getEdgeProps`
 - Universal application rendering (server and client)
 
 However, it's brand new! So it's also a bunch of these things:
