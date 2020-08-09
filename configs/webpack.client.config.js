@@ -5,6 +5,8 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { flareactConfig } = require("./utils");
 const defaultLoaders = require("./loaders");
 const webpack = require("webpack");
+const TerserJSPlugin = require("terser-webpack-plugin");
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 
 const projectDir = process.cwd();
 const flareact = flareactConfig(projectDir);
@@ -14,6 +16,9 @@ const isServer = false;
 module.exports = (env, argv) => {
   const config = {
     ...baseConfig({ dev, isServer }),
+    optimization: {
+      minimizer: [new TerserJSPlugin(), new OptimizeCSSAssetsPlugin()],
+    },
     context: projectDir,
     target: "web",
     entry: "flareact/src/client/index.js",
