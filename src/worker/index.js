@@ -6,6 +6,8 @@ import { getPage, getPageProps, PageNotFoundError } from "./pages";
 import AppProvider from "../components/AppProvider";
 import { Helmet } from "react-helmet";
 
+const dev = !!process.env.DEV;
+
 function pageIsApi(page) {
   return /^\/api\/.+/.test(page);
 }
@@ -16,21 +18,7 @@ export async function handleRequest(event, context, fallback) {
 
   try {
     if (pathname.startsWith("/_flareact")) {
-      const pagePath = pathname.replace(/\/_flareact|\.json/g, "");
-      const page = getPage(pagePath, context);
-      const props = await getPageProps(page);
-
-      return new Response(
-        JSON.stringify({
-          pageProps: props,
-        }),
-        {
-          status: 200,
-          headers: {
-            "content-type": "application/json",
-          },
-        }
-      );
+      return await handlePropsRequest(event, context, pathname);
     }
 
     const pagePath = pathname === "/" ? "/index" : pathname;
@@ -75,4 +63,37 @@ export async function handleRequest(event, context, fallback) {
 
     throw e;
   }
+}
+
+async function handlePropsRequest(event, context, pathname) {
+  const cache = caches.default;
+  const cacheKey = getCacheKey(event.request);
+  const cachedResponse = await cache.match(cacheKey);
+
+  if (!dev && cachedResponse) return cachedResponse;
+
+  const pagePath = pathname.replace(/\/_flareact|\.json/g, "");
+  const page = getPage(pagePath, context);
+  const props = await getPageProps(page);
+
+  // TODO: Add cache headers
+  const response = new Response(
+    JSON.stringify({
+      pageProps: props,
+    }),
+    {
+      status: 200,
+      headers: {
+        "content-type": "application/json",
+      },
+    }
+  );
+
+  await cache.put(event.request, response.clone());
+
+  return response;
+}
+
+function getCacheKey(request) {
+  return new Request(new URL(request.url).toString(), request);
 }
