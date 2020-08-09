@@ -16,7 +16,10 @@ export default function Document({ initialData, helmet }) {
         {helmet.link.toComponent()}
 
         {/* TODO: Find way to not show this when there are no styles */}
-        <link href="/main.css" rel="stylesheet" />
+        <link
+          href={dev ? "http://localhost:8080/main.css" : "/main.css"}
+          rel="stylesheet"
+        />
       </head>
       <body {...bodyAttrs}>
         <div id="__flareact" />

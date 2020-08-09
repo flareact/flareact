@@ -25,6 +25,7 @@ module.exports = function (env, argv) {
       },
     ])
   );
+
   if (dev) {
     config.plugins.push(
       new webpack.DefinePlugin({

@@ -20,14 +20,12 @@ module.exports = function ({ dev, isServer }) {
         {
           test: /\.css$/,
           use: [
-            dev
-              ? "style-loader"
-              : {
-                  loader: MiniCssExtractPlugin.loader,
-                  options: {
-                    hmr: process.env.NODE_ENV === "development",
-                  },
-                },
+            {
+              loader: MiniCssExtractPlugin.loader,
+              options: {
+                hmr: dev,
+              },
+            },
             { loader: "css-loader", options: { importLoaders: 1 } },
             {
               loader: "postcss-loader",
