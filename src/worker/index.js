@@ -4,6 +4,7 @@ import Document from "../components/_document";
 import { RouterProvider } from "../router";
 import { getPage, getPageProps, PageNotFoundError } from "./pages";
 import AppProvider from "../components/AppProvider";
+import { Helmet } from "react-helmet";
 
 function pageIsApi(page) {
   return /^\/api\/.+/.test(page);
@@ -43,16 +44,24 @@ export async function handleRequest(event, context, fallback) {
     const Component = page.default;
     const props = await getPageProps(page);
 
-    const html = ReactDOMServer.renderToString(
-      <Document initialData={props}>
-        <RouterProvider initialUrl={event.request.url}>
-          <AppProvider
-            Component={Component}
-            pageProps={props}
-            context={context}
-          />
-        </RouterProvider>
-      </Document>
+    const content = ReactDOMServer.renderToString(
+      <RouterProvider initialUrl={event.request.url}>
+        <AppProvider
+          Component={Component}
+          pageProps={props}
+          context={context}
+        />
+      </RouterProvider>
+    );
+
+    const helmet = Helmet.renderStatic();
+    let html = ReactDOMServer.renderToString(
+      <Document initialData={props} helmet={helmet} />
+    );
+
+    html = html.replace(
+      `<div id="__flareact"></div>`,
+      `<div id="__flareact">${content}</div>`
     );
 
     return new Response(html, {

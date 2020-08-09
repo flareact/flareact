@@ -8,6 +8,7 @@
     "src",
     "configs",
     "link.js",
+    "head.js",
     "webpack.js"
   ],
   "license": "MIT",
@@ -39,6 +40,7 @@
     "postcss-flexbugs-fixes": "^4.2.1",
     "postcss-loader": "^3.0.0",
     "postcss-preset-env": "^6.7.0",
+    "react-helmet": "^6.1.0",
     "react-refresh": "^0.8.3",
     "style-loader": "^1.2.1",
     "webpack": "^4.44.1",
