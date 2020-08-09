@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 const concurrently = require("concurrently");
+const dotenv = require("dotenv");
+dotenv.config();
 
 ["react", "react-dom"].forEach((dependency) => {
   try {
