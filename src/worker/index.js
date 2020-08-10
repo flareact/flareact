@@ -78,8 +78,7 @@ async function handlePropsRequest(event, context, pathname) {
   const page = getPage(pagePath, context);
   const props = await getPageProps(page);
 
-  // TODO: Add cache headers
-  const response = new Response(
+  let response = new Response(
     JSON.stringify({
       pageProps: props,
     }),
@@ -91,7 +90,20 @@ async function handlePropsRequest(event, context, pathname) {
     }
   );
 
-  await cache.put(event.request, response.clone());
+  // Cache edge props by default
+  let shouldCache = true;
+
+  if (props && typeof props.revalidate !== "undefined") {
+    if (props.revalidate === 0) {
+      shouldCache = false;
+    } else {
+      response.headers.append("Cache-Control", `max-age=${props.revalidate}`);
+    }
+  }
+
+  if (shouldCache) {
+    await cache.put(event.request, response.clone());
+  }
 
   return response;
 }

@@ -72,10 +72,11 @@ export async function getPageProps(page) {
   const fetcher = page.getEdgeProps || page.getStaticProps;
 
   if (fetcher) {
-    const { props } = await fetcher({ params });
+    const { props, revalidate } = await fetcher({ params });
 
     pageProps = {
       ...props,
+      revalidate,
     };
   }
 
