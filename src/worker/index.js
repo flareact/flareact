@@ -52,6 +52,8 @@ export async function handleRequest(event, context, fallback) {
       `<div id="__flareact">${content}</div>`
     );
 
+    html = "<!DOCTYPE html>" + html;
+
     return new Response(html, {
       status: 200,
       headers: { "content-type": "text/html" },
