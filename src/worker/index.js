@@ -6,7 +6,9 @@ import { getPage, getPageProps, PageNotFoundError } from "./pages";
 import AppProvider from "../components/AppProvider";
 import { Helmet } from "react-helmet";
 
-const dev = !!process.env.DEV;
+const dev =
+  (typeof DEV !== "undefined" && !!DEV) ||
+  process.env.NODE_ENV !== "production";
 
 function pageIsApi(page) {
   return /^\/api\/.+/.test(page);
@@ -18,46 +20,69 @@ export async function handleRequest(event, context, fallback) {
 
   try {
     if (pathname.startsWith("/_flareact")) {
-      return await handlePropsRequest(event, context, pathname);
+      const pagePath = pathname.replace(/\/_flareact|\.json/g, "");
+
+      return await handleCachedPageRequest(
+        event,
+        context,
+        pagePath,
+        (_, props) => {
+          return new Response(
+            JSON.stringify({
+              pageProps: props,
+            }),
+            {
+              status: 200,
+              headers: {
+                "content-type": "application/json",
+              },
+            }
+          );
+        }
+      );
     }
 
     const pagePath = pathname === "/" ? "/index" : pathname;
 
-    const page = getPage(pagePath, context);
-
     if (pageIsApi(pagePath)) {
+      const page = getPage(pagePath, context);
       return await page.default(event);
     }
 
-    const Component = page.default;
-    const props = await getPageProps(page);
+    return await handleCachedPageRequest(
+      event,
+      context,
+      pagePath,
+      (page, props) => {
+        const Component = page.default;
+        const content = ReactDOMServer.renderToString(
+          <RouterProvider initialUrl={event.request.url}>
+            <AppProvider
+              Component={Component}
+              pageProps={props}
+              context={context}
+            />
+          </RouterProvider>
+        );
 
-    const content = ReactDOMServer.renderToString(
-      <RouterProvider initialUrl={event.request.url}>
-        <AppProvider
-          Component={Component}
-          pageProps={props}
-          context={context}
-        />
-      </RouterProvider>
+        const helmet = Helmet.renderStatic();
+        let html = ReactDOMServer.renderToString(
+          <Document initialData={props} helmet={helmet} />
+        );
+
+        html = html.replace(
+          `<div id="__flareact"></div>`,
+          `<div id="__flareact">${content}</div>`
+        );
+
+        html = "<!DOCTYPE html>" + html;
+
+        return new Response(html, {
+          status: 200,
+          headers: { "content-type": "text/html" },
+        });
+      }
     );
-
-    const helmet = Helmet.renderStatic();
-    let html = ReactDOMServer.renderToString(
-      <Document initialData={props} helmet={helmet} />
-    );
-
-    html = html.replace(
-      `<div id="__flareact"></div>`,
-      `<div id="__flareact">${content}</div>`
-    );
-
-    html = "<!DOCTYPE html>" + html;
-
-    return new Response(html, {
-      status: 200,
-      headers: { "content-type": "text/html" },
-    });
   } catch (e) {
     if (e instanceof PageNotFoundError) {
       return await fallback(event);
@@ -67,33 +92,28 @@ export async function handleRequest(event, context, fallback) {
   }
 }
 
-async function handlePropsRequest(event, context, pathname) {
+async function handleCachedPageRequest(
+  event,
+  context,
+  pagePath,
+  generateResponse
+) {
   const cache = caches.default;
   const cacheKey = getCacheKey(event.request);
   const cachedResponse = await cache.match(cacheKey);
 
   if (!dev && cachedResponse) return cachedResponse;
 
-  const pagePath = pathname.replace(/\/_flareact|\.json/g, "");
   const page = getPage(pagePath, context);
   const props = await getPageProps(page);
 
-  let response = new Response(
-    JSON.stringify({
-      pageProps: props,
-    }),
-    {
-      status: 200,
-      headers: {
-        "content-type": "application/json",
-      },
-    }
-  );
+  let response = generateResponse(page, props);
 
-  // Cache edge props by default
+  // Cache by default
   let shouldCache = true;
 
   if (props && typeof props.revalidate !== "undefined") {
+    // Disable cache if the user has explicitly returned { revalidate: 0 } in `getEdgeProps`
     if (props.revalidate === 0) {
       shouldCache = false;
     } else {
@@ -102,12 +122,13 @@ async function handlePropsRequest(event, context, pathname) {
   }
 
   if (shouldCache) {
-    await cache.put(event.request, response.clone());
+    await cache.put(cacheKey, response.clone());
   }
 
   return response;
 }
 
 function getCacheKey(request) {
-  return new Request(new URL(request.url).toString(), request);
+  const url = request.url + "/" + process.env.BUILD_ID;
+  return new Request(new URL(url).toString(), request);
 }
