@@ -7,8 +7,8 @@ export default function AppProvider({
   context,
 }) {
   const { component } = useRouter();
-  const Component = component?.Component || initialComponent;
-  const props = component?.pageProps || pageProps;
+  const Component = component.Component || initialComponent;
+  const props = component.pageProps || pageProps;
 
   if (!Component) {
     return null;
