@@ -18,6 +18,7 @@ export function RouterProvider({
 }) {
   const { pathname: initialPathname } = new URL(initialUrl);
   const [pathname, setPathname] = useState(initialPathname);
+  const [initialPath, setInitialPath] = useState(initialPathname);
   const [component, setComponent] = useState({
     Component: initialComponent,
     pageProps: null,
@@ -45,11 +46,18 @@ export function RouterProvider({
       setComponent(pageCache[pagePath]);
     }
 
+    if (initialPath === pathname) {
+      return;
+    }
+
     loadNewPage();
-  }, [pathname]);
+  }, [pathname, initialPath]);
 
   function push(newPathname) {
     setPathname(newPathname);
+
+    // Blank this out so any return trips to the original component re-fetches props.
+    setInitialPath("");
 
     window.history.pushState({ pathname: newPathname }, null, newPathname);
   }

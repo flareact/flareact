@@ -4,6 +4,7 @@ const path = require("path");
 const webpack = require("webpack");
 const { flareactConfig } = require("./utils");
 const defaultLoaders = require("./loaders");
+const { nanoid } = require("nanoid");
 
 const dev = !!process.env.WORKER_DEV;
 const isServer = true;
@@ -26,13 +27,15 @@ module.exports = function (env, argv) {
     ])
   );
 
+  let inlineVars = {
+    "process.env.BUILD_ID": JSON.stringify(nanoid()),
+  };
+
   if (dev) {
-    config.plugins.push(
-      new webpack.DefinePlugin({
-        DEV: dev,
-      })
-    );
+    inlineVars.DEV = dev;
   }
+
+  config.plugins.push(new webpack.DefinePlugin(inlineVars));
 
   if (flareact.webpack) {
     config = flareact.webpack(config, {
