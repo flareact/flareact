@@ -1,6 +1,7 @@
 const baseConfig = require("./webpack.config");
 const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
 const path = require("path");
+const { stringify } = require("querystring");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { flareactConfig } = require("./utils");
 const defaultLoaders = require("./loaders");
@@ -22,7 +23,17 @@ let entry = {
 
 pageManifest.forEach((page) => {
   const pageName = page.match(/\/(.+)\.js$/)[1];
-  entry[pageName] = page;
+
+  const pageLoaderOpts = {
+    page: pageName,
+    absolutePagePath: path.resolve(projectDir, page),
+  };
+
+  const pageLoader = `flareact-client-pages-loader?${stringify(
+    pageLoaderOpts
+  )}!`;
+
+  entry[pageName] = pageLoader;
 });
 
 console.log(entry);
@@ -36,6 +47,16 @@ module.exports = (env, argv) => {
     },
     context: projectDir,
     target: "web",
+    resolveLoader: {
+      alias: {
+        "flareact-client-pages-loader": path.join(
+          __dirname,
+          "webpack",
+          "loaders",
+          "flareact-client-pages-loader"
+        ),
+      },
+    },
     output: {
       filename: (pathData) => {
         return pathData.chunk.name === "main"

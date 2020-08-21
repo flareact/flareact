@@ -4,7 +4,7 @@ import { getPage } from "./worker/pages";
 const RouterContext = React.createContext();
 
 async function loadPageProps(pagePath) {
-  const res = await fetch(`/_flareact${pagePath}.json`);
+  const res = await fetch(`/_flareact/props${pagePath}.json`);
   return await res.json();
 }
 

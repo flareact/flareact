@@ -84,3 +84,39 @@ export async function getPageProps(page) {
 }
 
 export class PageNotFoundError extends Error {}
+
+let pageCache = {};
+
+export async function registerInitialPages() {
+  if (window.__FLAREACT_PAGES) {
+    await Promise.all(
+      window.__FLAREACT_PAGES.map((p) => registerClientPage(p))
+    );
+  }
+
+  window.__FLAREACT_PAGES = [];
+  window.__FLAREACT_PAGES.push = registerClientPage;
+}
+
+export async function registerClientPage(page) {
+  const [pageName, fn] = page;
+  const pagePath = pageName.replace(/^pages/, "");
+
+  try {
+    const mod = fn();
+    const component = mod.default || mod;
+
+    pageCache[pagePath] = component;
+    console.log(`registered ${pagePath}`);
+  } catch (e) {
+    console.error(`Error loading page: ${pagePath}`, e);
+  }
+}
+
+export function getClientPage(page) {
+  if (pageCache[page]) {
+    return pageCache[page];
+  }
+
+  throw new Error(`${page} is not loaded`);
+}

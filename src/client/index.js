@@ -1,33 +1,36 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import Container from "./components/Container";
-import { getPage } from "../worker/pages";
+import { registerInitialPages, getClientPage } from "../worker/pages";
 
 const initialData = JSON.parse(
   document.getElementById("initial-data").getAttribute("data-json")
 );
 
-// 😩
-let context = require.context("../../../../pages/", true, /\.js$/);
-
-if (module.hot) {
-  module.hot.accept(context.id, function () {
-    context = require.context("../../../../pages/", true, /\.js$/);
-    render(Math.random());
-  });
-}
+// if (module.hot) {
+//   module.hot.accept(context.id, function () {
+//     context = require.context("../../../../pages/", true, /\.js$/);
+//     render(Math.random());
+//   });
+// }
 
 async function render(key) {
-  // TODO: Find a smarter way to load this for initial page view, like with script tag
-  const { pathname } = window.location;
-  const pagePath = pathname === "/" ? "/index" : pathname;
-  const page = await getPage(pagePath, context);
+  await registerInitialPages();
+
+  // TODO: Find smarter way to ensure initial pages have loaded
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  const { page } = initialData;
+  // TODO: Simplify page path parsing
+  const pagePath = page.page.replace(/^\./, "").replace(/\.js$/, "");
+  const component = getClientPage(pagePath);
+  const App = getClientPage("/_app");
 
   ReactDOM.hydrate(
     <Container
-      pageProps={initialData}
-      Component={page.default}
-      context={context}
+      pageProps={initialData.props}
+      Component={component}
+      App={App}
       key={key}
     />,
     document.getElementById("__flareact")
