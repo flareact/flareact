@@ -1,6 +1,6 @@
 {
   "name": "flareact",
-  "version": "0.0.15",
+  "version": "0.1.0",
   "main": "src/index.js",
   "module": "src/index.js",
   "description": "SSR React framework built for Cloudflare Workers",
