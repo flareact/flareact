@@ -13,17 +13,35 @@ const flareact = flareactConfig(projectDir);
 const dev = process.env.NODE_ENV === "development";
 const isServer = false;
 
+const glob = require("glob");
+const pageManifest = glob.sync("./pages/**/*.js");
+
+let entry = {
+  main: "flareact/src/client/index.js",
+};
+
+pageManifest.forEach((page) => {
+  const pageName = page.match(/\/(.+)\.js$/)[1];
+  entry[pageName] = page;
+});
+
+console.log(entry);
+
 module.exports = (env, argv) => {
   const config = {
     ...baseConfig({ dev, isServer }),
+    entry,
     optimization: {
       minimizer: [new TerserJSPlugin(), new OptimizeCSSAssetsPlugin()],
     },
     context: projectDir,
     target: "web",
-    entry: "flareact/src/client/index.js",
     output: {
-      filename: "client.js",
+      filename: (pathData) => {
+        return pathData.chunk.name === "main"
+          ? "[name].js"
+          : "_flareact/static/[name].js";
+      },
       path: path.resolve(projectDir, "out"),
     },
     plugins: [new MiniCssExtractPlugin()],
@@ -32,7 +50,7 @@ module.exports = (env, argv) => {
       hot: true,
       hotOnly: true,
       stats: "errors-warnings",
-      noInfo: true,
+      // noInfo: true,
       headers: {
         "access-control-allow-origin": "*",
       },

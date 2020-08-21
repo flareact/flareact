@@ -2,9 +2,12 @@ import React from "react";
 
 const dev = typeof DEV !== "undefined" && !!DEV;
 
-export default function Document({ initialData, helmet }) {
+export default function Document({ initialData, helmet, page, context }) {
   const htmlAttrs = helmet.htmlAttributes.toComponent();
   const bodyAttrs = helmet.bodyAttributes.toComponent();
+
+  // TODO: Drop all these props into a context and consume them in individual components
+  // so this page can be extended.
 
   return (
     <html lang="en" {...htmlAttrs}>
@@ -23,15 +26,31 @@ export default function Document({ initialData, helmet }) {
       </head>
       <body {...bodyAttrs}>
         <div id="__flareact" />
-        <script
-          id="initial-data"
-          type="text/plain"
-          data-json={JSON.stringify(initialData)}
-        ></script>
-        <script
-          src={dev ? "http://localhost:8080/client.js" : "/client.js"}
-        ></script>
+        <FlareactScripts
+          initialData={initialData}
+          page={page}
+          context={context}
+        />
       </body>
     </html>
+  );
+}
+
+export function FlareactScripts({ initialData, page, context }) {
+  const prefix = dev ? "http://localhost:8080/" : "/";
+  const pagePrefix = prefix + "_flareact/static/pages/";
+  const hasCustomApp = context.keys().includes("./_app.js");
+
+  return (
+    <>
+      <script
+        id="initial-data"
+        type="text/plain"
+        data-json={JSON.stringify(initialData)}
+      ></script>
+      <script src={`${prefix}main.js`}></script>
+      {hasCustomApp && <script src={`${pagePrefix}_app.js`}></script>}
+      <script src={`${pagePrefix}${page.page.replace(/^\.\//, "")}`}></script>
+    </>
   );
 }

@@ -67,7 +67,12 @@ export async function handleRequest(event, context, fallback) {
 
         const helmet = Helmet.renderStatic();
         let html = ReactDOMServer.renderToString(
-          <Document initialData={props} helmet={helmet} />
+          <Document
+            initialData={props}
+            helmet={helmet}
+            page={page}
+            context={context}
+          />
         );
 
         html = html.replace(
