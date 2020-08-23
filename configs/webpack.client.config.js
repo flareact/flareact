@@ -44,6 +44,9 @@ module.exports = (env, argv) => {
     entry,
     optimization: {
       minimizer: [new TerserJSPlugin(), new OptimizeCSSAssetsPlugin()],
+      splitChunks: {
+        chunks: "all",
+      },
     },
     context: projectDir,
     target: "web",
