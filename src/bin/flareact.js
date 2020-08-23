@@ -66,3 +66,27 @@ if (command === "publish") {
     }
   );
 }
+
+if (command === "build") {
+  console.log("Building your Flareact project for production...");
+
+  concurrently(
+    [
+      {
+        command:
+          "NODE_ENV=production webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode production",
+        name: "publish",
+      },
+    ],
+    {
+      prefix: "name",
+      killOthers: ["failure"],
+      restartTries: 0,
+    }
+  ).then(
+    () => {},
+    (error) => {
+      console.error(error);
+    }
+  );
+}
