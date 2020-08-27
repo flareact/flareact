@@ -36,7 +36,19 @@ pageManifest.forEach((page) => {
   entry[pageName] = pageLoader;
 });
 
-const totalPages = Object.keys(pageManifest).length;
+// Inject default _app unless user has a custom one
+if (!entry["pages/_app"]) {
+  const pageLoaderOpts = {
+    page: "pages/_app",
+    absolutePagePath: "flareact/src/components/_app.js",
+  };
+
+  const pageLoader = `flareact-client-pages-loader?${stringify(
+    pageLoaderOpts
+  )}!`;
+
+  entry["pages/_app"] = pageLoader;
+}
 
 module.exports = (env, argv) => {
   const config = {

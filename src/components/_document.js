@@ -40,7 +40,6 @@ export function FlareactScripts({ initialData, page, context }) {
   let prefix = dev ? "http://localhost:8080/" : "/";
   prefix += dev ? "" : "_flareact/static/";
   const pagePrefix = prefix + "pages/";
-  // const hasCustomApp = context.keys().includes("./_app.js");
 
   const scripts = ["webpack", "main", !dev && "framework"].filter(Boolean);
   const pages = ["_app.js", page.page.replace(/^\.\//, "")];
