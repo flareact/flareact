@@ -83,6 +83,12 @@ module.exports = (env, argv) => {
             cacheGroups: {
               default: false,
               vendors: false,
+              styles: {
+                name: "styles",
+                test: /\.css$/,
+                chunks: "all",
+                enforce: true,
+              },
               framework: {
                 chunks: "all",
                 name: "framework",
@@ -111,7 +117,11 @@ module.exports = (env, argv) => {
     output: {
       path: path.resolve(projectDir, "out/_flareact/static"),
     },
-    plugins: [new MiniCssExtractPlugin()],
+    plugins: [
+      new MiniCssExtractPlugin({
+        filename: "[name].css",
+      }),
+    ],
     devServer: {
       contentBase: path.resolve(projectDir, "out"),
       hot: true,
@@ -123,7 +133,7 @@ module.exports = (env, argv) => {
         "access-control-allow-origin": "*",
       },
     },
-    devtool: dev ? "source-map" : null,
+    devtool: dev ? "source-map" : false,
   };
 
   if (dev) {
