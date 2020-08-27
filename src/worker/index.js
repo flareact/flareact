@@ -18,6 +18,10 @@ export async function handleRequest(event, context, fallback) {
   const url = new URL(event.request.url);
   const { pathname } = url;
 
+  if (pathname.startsWith("/_flareact/static")) {
+    return await fallback(event);
+  }
+
   try {
     if (pathname.startsWith("/_flareact/props")) {
       const pagePath = pathname.replace(/\/_flareact\/props|\.json/g, "");

@@ -9,7 +9,8 @@ module.exports = function ({ dev, isServer }) {
   return {
     context: process.cwd(),
     plugins: [new MiniCssExtractPlugin()],
-    stats: "errors-warnings",
+    // TODO: Hide again
+    // stats: "errors-warnings",
     module: {
       rules: [
         {

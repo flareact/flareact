@@ -55,7 +55,7 @@ export default class PageLoader {
 
   loadScript(path) {
     const prefix =
-      process.env.NODE_ENV === production ? "/" : "http://localhost:8080/";
+      process.env.NODE_ENV === "production" ? "/" : "http://localhost:8080/";
     const url = prefix + path;
 
     if (document.querySelector(`script[src^="${url}"]`)) return;

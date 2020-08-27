@@ -36,17 +36,52 @@ pageManifest.forEach((page) => {
   entry[pageName] = pageLoader;
 });
 
-console.log(entry);
+const totalPages = Object.keys(pageManifest).length;
 
 module.exports = (env, argv) => {
   const config = {
     ...baseConfig({ dev, isServer }),
     entry,
     optimization: {
-      minimizer: [new TerserJSPlugin(), new OptimizeCSSAssetsPlugin()],
-      splitChunks: {
-        chunks: "all",
+      minimizer: [
+        new TerserJSPlugin({
+          terserOptions: {
+            output: {
+              comments: false,
+            },
+          },
+          extractComments: false,
+        }),
+        new OptimizeCSSAssetsPlugin(),
+      ],
+      // Split out webpack runtime so it's not included in every single page
+      runtimeChunk: {
+        name: "webpack",
       },
+      splitChunks: dev
+        ? {
+            cacheGroups: {
+              default: false,
+              vendors: false,
+            },
+          }
+        : {
+            chunks: "all",
+            cacheGroups: {
+              default: false,
+              vendors: false,
+              framework: {
+                chunks: "all",
+                name: "framework",
+                filename: "[name].js",
+                test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types)[\\/]/,
+                priority: 40,
+                // Don't let webpack eliminate this chunk (prevents this chunk from
+                // becoming a part of the commons chunk)
+                enforce: true,
+              },
+            },
+          },
     },
     context: projectDir,
     target: "web",
@@ -61,25 +96,26 @@ module.exports = (env, argv) => {
       },
     },
     output: {
-      filename: (pathData) => {
-        return pathData.chunk.name === "main"
-          ? "[name].js"
-          : "_flareact/static/[name].js";
-      },
-      path: path.resolve(projectDir, "out"),
+      path: path.resolve(projectDir, "out/_flareact/static"),
+      // TODO: Some of these are still 404 in dev
+      hotUpdateChunkFilename:
+        "_flareact/static/webpack/[id].[hash].hot-update.js",
+      hotUpdateMainFilename: "_flareact/static/webpack/[hash].hot-update.json",
     },
     plugins: [new MiniCssExtractPlugin()],
     devServer: {
       contentBase: path.resolve(projectDir, "out"),
+      publicPath: "/_flareact/static/",
       hot: true,
       hotOnly: true,
-      stats: "errors-warnings",
+      // TODO: Hide stats again
+      // stats: "errors-warnings",
       // noInfo: true,
       headers: {
         "access-control-allow-origin": "*",
       },
     },
-    devtool: "source-map",
+    devtool: dev ? "source-map" : null,
   };
 
   if (dev) {

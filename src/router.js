@@ -14,7 +14,7 @@ export function RouterProvider({
   children,
   initialUrl,
   initialComponent,
-  context,
+  pageLoader,
 }) {
   const { pathname: initialPathname } = new URL(initialUrl);
   const [pathname, setPathname] = useState(initialPathname);
@@ -24,21 +24,16 @@ export function RouterProvider({
     pageProps: null,
   });
 
-  // If the context ever changes, wipe out the page cache
-  useEffect(() => {
-    pageCache = {};
-  }, [context]);
-
   useEffect(() => {
     async function loadNewPage() {
       const pagePath = pathname === "/" ? "/index" : pathname;
 
       if (!pageCache[pagePath]) {
-        const page = await getPage(pagePath, context);
+        const page = await pageLoader.loadPage(pagePath);
         const { pageProps } = await loadPageProps(pagePath);
 
         pageCache[pagePath] = {
-          Component: page.default,
+          Component: page,
           pageProps,
         };
       }
