@@ -52,6 +52,7 @@ module.exports = (env, argv) => {
           },
           extractComments: false,
         }),
+        // TODO: Find way to get these to compile to a single, expected path
         new OptimizeCSSAssetsPlugin(),
       ],
       // Split out webpack runtime so it's not included in every single page
@@ -97,15 +98,10 @@ module.exports = (env, argv) => {
     },
     output: {
       path: path.resolve(projectDir, "out/_flareact/static"),
-      // TODO: Some of these are still 404 in dev
-      hotUpdateChunkFilename:
-        "_flareact/static/webpack/[id].[hash].hot-update.js",
-      hotUpdateMainFilename: "_flareact/static/webpack/[hash].hot-update.json",
     },
     plugins: [new MiniCssExtractPlugin()],
     devServer: {
       contentBase: path.resolve(projectDir, "out"),
-      publicPath: "/_flareact/static/",
       hot: true,
       hotOnly: true,
       // TODO: Hide stats again

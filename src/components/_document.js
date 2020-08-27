@@ -38,11 +38,12 @@ export default function Document({ initialData, helmet, page, context }) {
 
 export function FlareactScripts({ initialData, page, context }) {
   let prefix = dev ? "http://localhost:8080/" : "/";
-  prefix += "_flareact/static/";
+  prefix += dev ? "" : "_flareact/static/";
   const pagePrefix = prefix + "pages/";
-  const hasCustomApp = context.keys().includes("./_app.js");
+  // const hasCustomApp = context.keys().includes("./_app.js");
 
-  // TODO: Clean up scripts based on whether it's dev
+  const scripts = ["webpack", "main", !dev && "framework"].filter(Boolean);
+  const pages = ["_app.js", page.page.replace(/^\.\//, "")];
 
   return (
     <>
@@ -51,11 +52,12 @@ export function FlareactScripts({ initialData, page, context }) {
         type="text/plain"
         data-json={JSON.stringify(initialData)}
       ></script>
-      <script src={`${prefix}webpack.js`}></script>
-      <script src={`${prefix}main.js`}></script>
-      <script src={`${prefix}framework.js`}></script>
-      {hasCustomApp && <script src={`${pagePrefix}_app.js`}></script>}
-      <script src={`${pagePrefix}${page.page.replace(/^\.\//, "")}`}></script>
+      {scripts.map((script) => (
+        <script key={script} src={`${prefix}${script}.js`}></script>
+      ))}
+      {pages.map((p) => (
+        <script key={p} src={`${pagePrefix}${p}`}></script>
+      ))}
     </>
   );
 }

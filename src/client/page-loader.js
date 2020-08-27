@@ -1,5 +1,7 @@
 import mitt from "mitt";
 
+const dev = process.env.NODE_ENV !== "production";
+
 export default class PageLoader {
   constructor(initialPage) {
     this.pageCache = {};
@@ -46,9 +48,9 @@ export default class PageLoader {
       if (!this.loadingRoutes[route]) {
         this.loadingRoutes[route] = true;
 
-        this.loadScript(
-          `_flareact/static/pages${encodeURIComponent(route)}.js`
-        );
+        const prefix = dev ? "pages" : "flareact/static/pages";
+
+        this.loadScript(prefix + encodeURIComponent(route) + `.js`);
       }
     });
   }
