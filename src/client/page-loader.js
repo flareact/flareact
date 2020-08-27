@@ -25,7 +25,6 @@ export default class PageLoader {
 
       this.pageCache[pagePath] = component;
       this.pageRegisterEvents.emit(pagePath, component);
-      console.log(`registered ${pagePath}`);
     } catch (e) {
       console.error(`Error loading page: ${pagePath}`, e);
     }
