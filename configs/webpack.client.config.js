@@ -64,7 +64,6 @@ module.exports = (env, argv) => {
           },
           extractComments: false,
         }),
-        // TODO: Find way to get these to compile to a single, expected path
         new OptimizeCSSAssetsPlugin(),
       ],
       // Split out webpack runtime so it's not included in every single page
@@ -126,9 +125,8 @@ module.exports = (env, argv) => {
       contentBase: path.resolve(projectDir, "out"),
       hot: true,
       hotOnly: true,
-      // TODO: Hide stats again
-      // stats: "errors-warnings",
-      // noInfo: true,
+      stats: "errors-warnings",
+      noInfo: true,
       headers: {
         "access-control-allow-origin": "*",
       },

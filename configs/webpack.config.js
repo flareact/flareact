@@ -24,8 +24,7 @@ module.exports = function ({ dev, isServer }) {
   return {
     context: process.cwd(),
     plugins: [new MiniCssExtractPlugin()],
-    // TODO: Hide again
-    // stats: "errors-warnings",
+    stats: "errors-warnings",
     module: {
       rules: [
         {
