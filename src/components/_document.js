@@ -38,7 +38,14 @@ export function FlareactScripts({ initialData, page, context }) {
   prefix += dev ? "" : "_flareact/static/";
   const pagePrefix = prefix + "pages/";
 
-  const scripts = ["webpack", "main", !dev && "framework"].filter(Boolean);
+  const scripts = [
+    "webpack",
+    "main",
+    // FIXME: `styles` is required to make _app with style imports work.
+    // This is silly and I'd love to fix this.
+    !dev && "styles",
+    !dev && "framework",
+  ].filter(Boolean);
   const pages = ["_app.js", page.page.replace(/^\.\//, "")];
 
   return (

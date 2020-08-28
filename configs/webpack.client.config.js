@@ -15,6 +15,8 @@ const dev = process.env.NODE_ENV === "development";
 const isServer = false;
 
 const glob = require("glob");
+
+// TODO: Filter out API routes
 const pageManifest = glob.sync("./pages/**/*.js");
 
 let entry = {
@@ -49,6 +51,9 @@ if (!entry["pages/_app"]) {
 
   entry["pages/_app"] = pageLoader;
 }
+
+const totalPages = Object.keys(entry).filter((key) => key.includes("pages"))
+  .length;
 
 module.exports = (env, argv) => {
   const config = {

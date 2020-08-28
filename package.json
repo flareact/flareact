@@ -9,6 +9,7 @@
     "configs",
     "link.js",
     "head.js",
+    "router.js",
     "webpack.js"
   ],
   "license": "MIT",

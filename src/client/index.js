@@ -1,7 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import Container from "./components/Container";
-import { registerInitialPages, getClientPage } from "../worker/pages";
 import PageLoader from "./page-loader";
 
 const initialData = JSON.parse(
@@ -15,7 +14,7 @@ const pageLoader = new PageLoader(pagePath);
 const register = (page) => pageLoader.registerPage(page);
 
 if (window.__FLAREACT_PAGES) {
-  window.__FLAREACT_PAGES.map((p) => register(p));
+  window.__FLAREACT_PAGES.forEach((p) => register(p));
 }
 
 window.__FLAREACT_PAGES = [];

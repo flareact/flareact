@@ -47,9 +47,9 @@ export default class PageLoader {
       if (!this.loadingRoutes[route]) {
         this.loadingRoutes[route] = true;
 
-        const prefix = dev ? "pages" : "flareact/static/pages";
+        const prefix = dev ? "pages" : "_flareact/static/pages";
 
-        this.loadScript(prefix + encodeURIComponent(route) + `.js`);
+        this.loadScript(prefix + route + `.js`);
       }
     });
   }
