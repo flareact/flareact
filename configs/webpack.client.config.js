@@ -16,7 +16,6 @@ const isServer = false;
 
 const glob = require("glob");
 
-// TODO: Filter out API routes
 const pageManifest = glob.sync("./pages/**/*.js");
 
 let entry = {
@@ -24,6 +23,8 @@ let entry = {
 };
 
 pageManifest.forEach((page) => {
+  if (/pages\/api\//.test(page)) return;
+
   const pageName = page.match(/\/(.+)\.js$/)[1];
 
   const pageLoaderOpts = {
