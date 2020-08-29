@@ -2,6 +2,8 @@
 
 Flareact is an **edge-rendered React framework** powered by Cloudflare Workers.
 
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button?paid=true)](https://deploy.workers.cloudflare.com/?url=https://github.com/flareact/flareact-template&paid=true)
+
 It's inspired by [Next.js](https://nextjs.org/).
 
 That means it supports nice API patterns like:
