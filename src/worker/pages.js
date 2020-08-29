@@ -84,11 +84,3 @@ export async function getPageProps(page) {
 }
 
 export class PageNotFoundError extends Error {}
-
-export function getClientPage(page) {
-  if (pageCache[page]) {
-    return pageCache[page];
-  }
-
-  throw new Error(`${page} is not loaded`);
-}
