@@ -1,34 +1,36 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import Container from "./components/Container";
-import { getPage } from "../worker/pages";
+import PageLoader from "./page-loader";
 
 const initialData = JSON.parse(
   document.getElementById("initial-data").getAttribute("data-json")
 );
 
-// 😩
-let context = require.context("../../../../pages/", true, /\.js$/);
+// TODO: Simplify page path parsing
+const pagePath = initialData.page.page.replace(/^\./, "").replace(/\.js$/, "");
+const pageLoader = new PageLoader(pagePath);
 
-if (module.hot) {
-  module.hot.accept(context.id, function () {
-    context = require.context("../../../../pages/", true, /\.js$/);
-    render(Math.random());
-  });
+const register = (page) => pageLoader.registerPage(page);
+
+if (window.__FLAREACT_PAGES) {
+  window.__FLAREACT_PAGES.forEach((p) => register(p));
 }
 
+window.__FLAREACT_PAGES = [];
+window.__FLAREACT_PAGES.push = register;
+
 async function render(key) {
-  // TODO: Find a smarter way to load this for initial page view, like with script tag
-  const { pathname } = window.location;
-  const pagePath = pathname === "/" ? "/index" : pathname;
-  const page = await getPage(pagePath, context);
+  const App = await pageLoader.loadPage("/_app");
+  const Component = await pageLoader.loadPage(pagePath);
 
   ReactDOM.hydrate(
     <Container
-      pageProps={initialData}
-      Component={page.default}
-      context={context}
+      pageProps={initialData.props}
+      Component={Component}
+      App={App}
       key={key}
+      pageLoader={pageLoader}
     />,
     document.getElementById("__flareact")
   );

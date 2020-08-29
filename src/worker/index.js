@@ -18,9 +18,13 @@ export async function handleRequest(event, context, fallback) {
   const url = new URL(event.request.url);
   const { pathname } = url;
 
+  if (pathname.startsWith("/_flareact/static")) {
+    return await fallback(event);
+  }
+
   try {
-    if (pathname.startsWith("/_flareact")) {
-      const pagePath = pathname.replace(/\/_flareact|\.json/g, "");
+    if (pathname.startsWith("/_flareact/props")) {
+      const pagePath = pathname.replace(/\/_flareact\/props|\.json/g, "");
 
       return await handleCachedPageRequest(
         event,
@@ -55,19 +59,32 @@ export async function handleRequest(event, context, fallback) {
       pagePath,
       (page, props) => {
         const Component = page.default;
+        const App = getPage("/_app", context).default;
+
         const content = ReactDOMServer.renderToString(
           <RouterProvider initialUrl={event.request.url}>
             <AppProvider
               Component={Component}
+              App={App}
               pageProps={props}
               context={context}
             />
           </RouterProvider>
         );
 
+        const pageProps = {
+          props,
+          page,
+        };
+
         const helmet = Helmet.renderStatic();
         let html = ReactDOMServer.renderToString(
-          <Document initialData={props} helmet={helmet} />
+          <Document
+            initialData={pageProps}
+            helmet={helmet}
+            page={page}
+            context={context}
+          />
         );
 
         html = html.replace(

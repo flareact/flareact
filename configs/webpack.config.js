@@ -6,6 +6,21 @@ const { fileExistsInDir } = require("./utils");
 module.exports = function ({ dev, isServer }) {
   const loaders = defaultLoaders({ dev, isServer });
 
+  const cssExtractLoader = {
+    loader: MiniCssExtractPlugin.loader,
+  };
+
+  const styleLoader = "style-loader";
+
+  const finalStyleLoader = () => {
+    if (dev) {
+      if (isServer) return cssExtractLoader;
+      return styleLoader;
+    } else {
+      return cssExtractLoader;
+    }
+  };
+
   return {
     context: process.cwd(),
     plugins: [new MiniCssExtractPlugin()],
@@ -20,12 +35,7 @@ module.exports = function ({ dev, isServer }) {
         {
           test: /\.css$/,
           use: [
-            {
-              loader: MiniCssExtractPlugin.loader,
-              options: {
-                hmr: dev,
-              },
-            },
+            finalStyleLoader(),
             { loader: "css-loader", options: { importLoaders: 1 } },
             {
               loader: "postcss-loader",
