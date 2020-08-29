@@ -1,6 +1,6 @@
 {
   "name": "flareact",
-  "version": "0.1.0",
+  "version": "0.0.0-development",
   "main": "src/index.js",
   "module": "src/index.js",
   "description": "SSR React framework built for Cloudflare Workers",
@@ -13,7 +13,8 @@
   ],
   "license": "MIT",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "semantic-release": "semantic-release"
   },
   "peerDependencies": {
     "react": "^16.13.1",
@@ -56,6 +57,27 @@
     "babel-jest": "^26.2.2",
     "jest": "^26.2.2",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react-dom": "^16.13.1",
+    "semantic-release": "^17.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/flareact/flareact.git"
+  },
+  "release": {
+    "branches": [
+      "+([0-9])?(.{+([0-9]),x}).x",
+      "master",
+      "next",
+      "next-major",
+      {
+        "name": "beta",
+        "prerelease": true
+      },
+      {
+        "name": "alpha",
+        "prerelease": true
+      }
+    ]
   }
 }
