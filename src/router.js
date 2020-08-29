@@ -12,7 +12,7 @@ export function RouterProvider({
 }) {
   const { pathname: initialPathname } = new URL(initialUrl);
   const [route, setRoute] = useState({
-    href: "",
+    href: initialPathname,
     asPath: initialPathname,
   });
   const [initialPath, setInitialPath] = useState(initialPathname);
@@ -24,8 +24,8 @@ export function RouterProvider({
   useEffect(() => {
     async function loadNewPage() {
       const { href, asPath } = route;
-      const pagePath = href === "/" ? "/index" : href;
-      const normalizedAsPath = asPath === "/" ? "/index" : asPath;
+      const pagePath = normalizePathname(href);
+      const normalizedAsPath = normalizePathname(asPath);
 
       if (!pageCache[normalizedAsPath]) {
         const page = await pageLoader.loadPage(pagePath);
@@ -108,4 +108,8 @@ export function useRouter() {
 async function loadPageProps(pagePath) {
   const res = await fetch(`/_flareact/props${pagePath}.json`);
   return await res.json();
+}
+
+function normalizePathname(pathname) {
+  return pathname === "/" ? "/index" : pathname;
 }
