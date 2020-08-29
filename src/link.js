@@ -24,7 +24,7 @@ export default function Link(props) {
   const router = useRouter();
   const child = Children.only(props.children);
 
-  const { href } = props;
+  const { href, as } = props;
 
   function linkClicked(e) {
     const { nodeName, target } = e.currentTarget;
@@ -44,7 +44,7 @@ export default function Link(props) {
 
     e.preventDefault();
 
-    router.push(href);
+    router.push(href, as);
   }
 
   const childProps = {
