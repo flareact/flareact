@@ -7,8 +7,7 @@ const initialData = JSON.parse(
   document.getElementById("initial-data").getAttribute("data-json")
 );
 
-// TODO: Simplify page path parsing
-const pagePath = initialData.page.page.replace(/^\./, "").replace(/\.js$/, "");
+const pagePath = initialData.page.pagePath;
 const pageLoader = new PageLoader(pagePath);
 
 const register = (page) => pageLoader.registerPage(page);
@@ -31,6 +30,7 @@ async function render(key) {
       App={App}
       key={key}
       pageLoader={pageLoader}
+      pagePath={pagePath}
     />,
     document.getElementById("__flareact")
   );

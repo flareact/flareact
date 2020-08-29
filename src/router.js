@@ -7,12 +7,13 @@ let pageCache = {};
 export function RouterProvider({
   children,
   initialUrl,
+  initialPagePath,
   initialComponent,
   pageLoader,
 }) {
   const { pathname: initialPathname } = new URL(initialUrl);
   const [route, setRoute] = useState({
-    href: initialPathname,
+    href: initialPagePath,
     asPath: initialPathname,
   });
   const [initialPath, setInitialPath] = useState(initialPathname);
@@ -110,6 +111,6 @@ async function loadPageProps(pagePath) {
   return await res.json();
 }
 
-function normalizePathname(pathname) {
+export function normalizePathname(pathname) {
   return pathname === "/" ? "/index" : pathname;
 }

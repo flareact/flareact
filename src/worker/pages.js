@@ -21,6 +21,7 @@ export function resolvePagePath(pagePath, keys) {
 
     return {
       page,
+      pagePath: page.replace(/^\./, "").replace(/\.js$/, ""),
       parts,
       test: new RegExp(test, isDynamic ? "g" : ""),
     };
