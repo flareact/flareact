@@ -65,6 +65,10 @@ export function RouterProvider({
   function prefetch(href) {
     const pagePath = normalizePathname(href);
 
+    if (process.env.NODE_ENV !== "production") {
+      return;
+    }
+
     // TODO: Support `prefetch` in addition to `loadPage`
     pageLoader.loadPage(pagePath);
   }
