@@ -59,7 +59,7 @@ export function RouterProvider({
     // Blank this out so any return trips to the original component re-fetches props.
     setInitialPath("");
 
-    window.history.pushState({ href, asPath }, null, as);
+    window.history.pushState({ href, asPath }, null, asPath);
   }
 
   useEffect(() => {
