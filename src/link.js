@@ -1,19 +1,7 @@
 import React, { Children } from "react";
 import { useRouter } from "./router";
 
-/**
- * Detects whether a given url is from the same origin as the current page (browser only).
- */
-function isLocal(url) {
-  const locationOrigin = getLocationOrigin();
-  const resolved = new URL(url, locationOrigin);
-  return resolved.origin === locationOrigin;
-}
-
-function getLocationOrigin() {
-  const { protocol, hostname, port } = window.location;
-  return `${protocol}//${hostname}${port ? ":" + port : ""}`;
-}
+let prefetched = {};
 
 /**
  * Heavily-inspired by next/link
@@ -25,6 +13,8 @@ export default function Link(props) {
   const child = Children.only(props.children);
 
   const { href, as } = props;
+
+  const shouldPrefetch = props.prefetch !== false;
 
   function linkClicked(e) {
     const { nodeName, target } = e.currentTarget;
@@ -69,6 +59,16 @@ export default function Link(props) {
     },
   };
 
+  if (shouldPrefetch) {
+    childProps.onMouseEnter = (e) => {
+      if (child.props && typeof child.props.onMouseEnter === "function") {
+        child.props.onMouseEnter(e);
+      }
+
+      prefetch(router, href, as, { priority: true });
+    };
+  }
+
   // If child is an <a> tag and doesn't have a href attribute, or if the 'passHref' property is
   // defined, we specify the current 'href', so that repetition is not needed by the user
   if (props.passHref || (child.type === "a" && !("href" in child.props))) {
@@ -76,4 +76,26 @@ export default function Link(props) {
   }
 
   return React.cloneElement(child, childProps);
+}
+
+/**
+ * Detects whether a given url is from the same origin as the current page (browser only).
+ */
+function isLocal(url) {
+  const locationOrigin = getLocationOrigin();
+  const resolved = new URL(url, locationOrigin);
+  return resolved.origin === locationOrigin;
+}
+
+function getLocationOrigin() {
+  const { protocol, hostname, port } = window.location;
+  return `${protocol}//${hostname}${port ? ":" + port : ""}`;
+}
+
+function prefetch(router, href, as, options) {
+  if (typeof window === "undefined") return;
+
+  router.prefetch(href, as, options);
+
+  prefetched[href + "%" + as] = true;
 }

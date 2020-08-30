@@ -62,6 +62,13 @@ export function RouterProvider({
     window.history.pushState({ href, asPath }, null, asPath);
   }
 
+  function prefetch(href) {
+    const pagePath = normalizePathname(href);
+
+    // TODO: Support `prefetch` in addition to `loadPage`
+    pageLoader.loadPage(pagePath);
+  }
+
   useEffect(() => {
     function handlePopState(e) {
       let newRoute = {};
@@ -95,6 +102,7 @@ export function RouterProvider({
     pathname: route.href,
     asPath: route.asPath,
     push,
+    prefetch,
   };
 
   return (
