@@ -54,6 +54,12 @@ export default class PageLoader {
     });
   }
 
+  async loadPageProps(pagePath) {
+    const url = getPagePropsUrl(pagePath);
+    const res = await fetch(url);
+    return await res.json();
+  }
+
   prefetchData(route) {
     const url = getPagePropsUrl(route);
 

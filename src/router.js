@@ -31,7 +31,7 @@ export function RouterProvider({
 
       if (!pageCache[normalizedAsPath]) {
         const page = await pageLoader.loadPage(pagePath);
-        const { pageProps } = await loadPageProps(normalizedAsPath);
+        const { pageProps } = await pageLoader.loadPageProps(normalizedAsPath);
 
         pageCache[normalizedAsPath] = {
           Component: page,
@@ -120,12 +120,6 @@ export function RouterProvider({
 
 export function useRouter() {
   return useContext(RouterContext);
-}
-
-async function loadPageProps(pagePath) {
-  const url = getPagePropsUrl(pagePath);
-  const res = await fetch(url);
-  return await res.json();
 }
 
 export function normalizePathname(pathname) {
