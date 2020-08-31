@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
+import { getPagePropsUrl } from "./client/page-loader";
 
 const RouterContext = React.createContext();
 
@@ -62,15 +63,19 @@ export function RouterProvider({
     window.history.pushState({ href, asPath }, null, asPath);
   }
 
-  function prefetch(href) {
+  function prefetch(href, as) {
     const pagePath = normalizePathname(href);
+    const asPath = normalizePathname(as || href);
 
     if (process.env.NODE_ENV !== "production") {
       return;
     }
 
-    // TODO: Support `prefetch` in addition to `loadPage`
-    pageLoader.loadPage(pagePath);
+    return Promise.all([
+      pageLoader.prefetchData(asPath),
+      // TODO: Support `prefetch` in addition to `loadPage`
+      pageLoader.loadPage(pagePath),
+    ]);
   }
 
   useEffect(() => {
@@ -119,7 +124,8 @@ export function useRouter() {
 }
 
 async function loadPageProps(pagePath) {
-  const res = await fetch(`/_flareact/props${pagePath}.json`);
+  const url = getPagePropsUrl(pagePath);
+  const res = await fetch(url);
   return await res.json();
 }
 
