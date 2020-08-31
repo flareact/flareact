@@ -63,18 +63,17 @@ export function RouterProvider({
     window.history.pushState({ href, asPath }, null, asPath);
   }
 
-  function prefetch(href, as) {
-    const pagePath = normalizePathname(href);
-    const asPath = normalizePathname(as || href);
-
+  function prefetch(href, as, { priority } = {}) {
     if (process.env.NODE_ENV !== "production") {
       return;
     }
 
+    const pagePath = normalizePathname(href);
+    const asPath = normalizePathname(as || href);
+
     return Promise.all([
       pageLoader.prefetchData(asPath),
-      // TODO: Support `prefetch` in addition to `loadPage`
-      pageLoader.loadPage(pagePath),
+      pageLoader[priority ? "loadPage" : "prefetch"](pagePath),
     ]);
   }
 

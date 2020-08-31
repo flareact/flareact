@@ -47,15 +47,23 @@ export default class PageLoader {
       if (!this.loadingRoutes[route]) {
         this.loadingRoutes[route] = true;
 
-        const prefix = dev ? "pages" : "_flareact/static/pages";
+        const url = getPagePathUrl(route);
 
-        this.loadScript(prefix + route + `.js`);
+        this.loadScript(url);
       }
     });
   }
 
   prefetchData(route) {
     const url = getPagePropsUrl(route);
+
+    this.loadPrefetch(url, "script");
+  }
+
+  prefetch(route) {
+    const url = getPagePathUrl(route);
+
+    if (connectionIsSlow()) return;
 
     this.loadPrefetch(url, "script");
   }
@@ -96,6 +104,12 @@ export function getPagePropsUrl(pagePath) {
   return `/_flareact/props${pagePath}.json`;
 }
 
+function getPagePathUrl(pagePath) {
+  const prefix = dev ? "pages" : "_flareact/static/pages";
+
+  return prefix + pagePath + ".js";
+}
+
 /**
  * Borrowed from Next.js
  */
@@ -117,3 +131,19 @@ const relPrefetch =
     : // https://caniuse.com/#feat=link-rel-prefetch
       // IE 11, Edge 12+, nearly all evergreen
       "prefetch";
+
+/**
+ * Borrowed from Next.js.
+ * Don't prefetch if using 2G or if Save-Data is enabled.
+ *
+ * https://github.com/GoogleChromeLabs/quicklink/blob/453a661fa1fa940e2d2e044452398e38c67a98fb/src/index.mjs#L115-L118
+ * License: Apache 2.0
+ */
+function connectionIsSlow() {
+  let cn;
+  if ((cn = navigator.connection)) {
+    return cn.saveData || /2g/.test(cn.effectiveType);
+  }
+
+  return false;
+}
