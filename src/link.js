@@ -1,19 +1,9 @@
-import React, { Children } from "react";
+import React, { Children, useEffect, useState } from "react";
 import { useRouter } from "./router";
 
-/**
- * Detects whether a given url is from the same origin as the current page (browser only).
- */
-function isLocal(url) {
-  const locationOrigin = getLocationOrigin();
-  const resolved = new URL(url, locationOrigin);
-  return resolved.origin === locationOrigin;
-}
-
-function getLocationOrigin() {
-  const { protocol, hostname, port } = window.location;
-  return `${protocol}//${hostname}${port ? ":" + port : ""}`;
-}
+let prefetched = {};
+let cachedIntersectionObserver;
+let listeners = new Map();
 
 /**
  * Heavily-inspired by next/link
@@ -22,9 +12,29 @@ function getLocationOrigin() {
  */
 export default function Link(props) {
   const router = useRouter();
+  const [childElm, setChildElm] = useState();
   const child = Children.only(props.children);
 
   const { href, as } = props;
+
+  const shouldPrefetch = props.prefetch !== false;
+
+  useEffect(() => {
+    if (
+      shouldPrefetch &&
+      IntersectionObserver &&
+      childElm &&
+      childElm.tagName
+    ) {
+      const isPrefetched = prefetched[href + "%" + as];
+
+      if (!isPrefetched) {
+        return listenToIntersections(childElm, () => {
+          prefetch(router, href, as);
+        });
+      }
+    }
+  }, [shouldPrefetch, childElm, href, as, router]);
 
   function linkClicked(e) {
     const { nodeName, target } = e.currentTarget;
@@ -50,6 +60,8 @@ export default function Link(props) {
   const childProps = {
     // Forward ref if the user has it set
     ref: (el) => {
+      if (el) setChildElm(el);
+
       if (child && child.ref) {
         if (typeof child.ref === "function") child.ref(el);
         else if (typeof child.ref === "object") {
@@ -69,6 +81,16 @@ export default function Link(props) {
     },
   };
 
+  if (shouldPrefetch) {
+    childProps.onMouseEnter = (e) => {
+      if (child.props && typeof child.props.onMouseEnter === "function") {
+        child.props.onMouseEnter(e);
+      }
+
+      prefetch(router, href, as, { priority: true });
+    };
+  }
+
   // If child is an <a> tag and doesn't have a href attribute, or if the 'passHref' property is
   // defined, we specify the current 'href', so that repetition is not needed by the user
   if (props.passHref || (child.type === "a" && !("href" in child.props))) {
@@ -76,4 +98,68 @@ export default function Link(props) {
   }
 
   return React.cloneElement(child, childProps);
+}
+
+/**
+ * Detects whether a given url is from the same origin as the current page (browser only).
+ */
+function isLocal(url) {
+  const locationOrigin = getLocationOrigin();
+  const resolved = new URL(url, locationOrigin);
+  return resolved.origin === locationOrigin;
+}
+
+function getLocationOrigin() {
+  const { protocol, hostname, port } = window.location;
+  return `${protocol}//${hostname}${port ? ":" + port : ""}`;
+}
+
+function prefetch(router, href, as, options) {
+  if (typeof window === "undefined") return;
+
+  router.prefetch(href, as, options);
+
+  prefetched[href + "%" + as] = true;
+}
+
+function getObserver() {
+  if (cachedIntersectionObserver) return cachedIntersectionObserver;
+
+  if (!IntersectionObserver) return undefined;
+
+  return (cachedIntersectionObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!listeners.has(entry.target)) return;
+
+        const cb = listeners.get(entry.target);
+        if (entry.isIntersecting || entry.intersectionRatio > 0) {
+          cachedIntersectionObserver.unobserve(entry.target);
+          listeners.delete(entry.target);
+          cb();
+        }
+      });
+    },
+    {
+      rootMargin: "200px",
+    }
+  ));
+}
+
+function listenToIntersections(el, cb) {
+  const observer = getObserver();
+
+  if (!observer) return () => {};
+
+  observer.observe(el);
+  listeners.set(el, cb);
+
+  return () => {
+    try {
+      observer.unobserve(el);
+    } catch (e) {
+      console.error(e);
+    }
+    listeners.delete(el);
+  };
 }

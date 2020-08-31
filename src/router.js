@@ -30,7 +30,7 @@ export function RouterProvider({
 
       if (!pageCache[normalizedAsPath]) {
         const page = await pageLoader.loadPage(pagePath);
-        const { pageProps } = await loadPageProps(normalizedAsPath);
+        const { pageProps } = await pageLoader.loadPageProps(normalizedAsPath);
 
         pageCache[normalizedAsPath] = {
           Component: page,
@@ -60,6 +60,20 @@ export function RouterProvider({
     setInitialPath("");
 
     window.history.pushState({ href, asPath }, null, asPath);
+  }
+
+  function prefetch(href, as, { priority } = {}) {
+    if (process.env.NODE_ENV !== "production") {
+      return;
+    }
+
+    const pagePath = normalizePathname(href);
+    const asPath = normalizePathname(as || href);
+
+    return Promise.all([
+      pageLoader.prefetchData(asPath),
+      pageLoader[priority ? "loadPage" : "prefetch"](pagePath),
+    ]);
   }
 
   useEffect(() => {
@@ -95,6 +109,7 @@ export function RouterProvider({
     pathname: route.href,
     asPath: route.asPath,
     push,
+    prefetch,
   };
 
   return (
@@ -104,11 +119,6 @@ export function RouterProvider({
 
 export function useRouter() {
   return useContext(RouterContext);
-}
-
-async function loadPageProps(pagePath) {
-  const res = await fetch(`/_flareact/props${pagePath}.json`);
-  return await res.json();
 }
 
 export function normalizePathname(pathname) {
