@@ -1,72 +1,100 @@
 import React, { useContext, useState, useEffect } from "react";
-import { getPage } from "./worker/pages";
 
 const RouterContext = React.createContext();
-
-async function loadPageProps(pagePath) {
-  const res = await fetch(`/_flareact${pagePath}.json`);
-  return await res.json();
-}
 
 let pageCache = {};
 
 export function RouterProvider({
   children,
   initialUrl,
+  initialPagePath,
   initialComponent,
-  context,
+  pageLoader,
 }) {
   const { pathname: initialPathname } = new URL(initialUrl);
-  const [pathname, setPathname] = useState(initialPathname);
+  const [route, setRoute] = useState({
+    href: initialPagePath,
+    asPath: initialPathname,
+  });
   const [initialPath, setInitialPath] = useState(initialPathname);
   const [component, setComponent] = useState({
     Component: initialComponent,
     pageProps: null,
   });
 
-  // If the context ever changes, wipe out the page cache
-  useEffect(() => {
-    pageCache = {};
-  }, [context]);
-
   useEffect(() => {
     async function loadNewPage() {
-      const pagePath = pathname === "/" ? "/index" : pathname;
+      const { href, asPath } = route;
+      const pagePath = normalizePathname(href);
+      const normalizedAsPath = normalizePathname(asPath);
 
-      if (!pageCache[pagePath]) {
-        const page = await getPage(pagePath, context);
-        const { pageProps } = await loadPageProps(pagePath);
+      if (!pageCache[normalizedAsPath]) {
+        const page = await pageLoader.loadPage(pagePath);
+        const { pageProps } = await pageLoader.loadPageProps(normalizedAsPath);
 
-        pageCache[pagePath] = {
-          Component: page.default,
+        pageCache[normalizedAsPath] = {
+          Component: page,
           pageProps,
         };
       }
 
-      setComponent(pageCache[pagePath]);
+      setComponent(pageCache[normalizedAsPath]);
     }
 
-    if (initialPath === pathname) {
+    if (initialPath === route.asPath) {
       return;
     }
 
     loadNewPage();
-  }, [pathname, initialPath]);
+  }, [route, initialPath]);
 
-  function push(newPathname) {
-    setPathname(newPathname);
+  function push(href, as) {
+    const asPath = as || href;
+
+    setRoute({
+      href,
+      asPath,
+    });
 
     // Blank this out so any return trips to the original component re-fetches props.
     setInitialPath("");
 
-    window.history.pushState({ pathname: newPathname }, null, newPathname);
+    window.history.pushState({ href, asPath }, null, asPath);
+  }
+
+  function prefetch(href, as, { priority } = {}) {
+    if (process.env.NODE_ENV !== "production") {
+      return;
+    }
+
+    const pagePath = normalizePathname(href);
+    const asPath = normalizePathname(as || href);
+
+    return Promise.all([
+      pageLoader.prefetchData(asPath),
+      pageLoader[priority ? "loadPage" : "prefetch"](pagePath),
+    ]);
   }
 
   useEffect(() => {
     function handlePopState(e) {
-      const newPathname = e.state ? e.state.pathname : window.location.pathname;
+      let newRoute = {};
 
-      setPathname(newPathname);
+      const { state } = e;
+
+      if (state) {
+        newRoute = {
+          href: state.href,
+          asPath: state.asPath,
+        };
+      } else {
+        newRoute = {
+          href: window.location.pathname || "/",
+          asPath: window.location.pathname || "/",
+        };
+      }
+
+      setRoute(newRoute);
     }
 
     window.addEventListener("popstate", handlePopState);
@@ -74,12 +102,14 @@ export function RouterProvider({
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [setPathname]);
+  }, [setRoute]);
 
   const router = {
     component,
-    pathname,
+    pathname: route.href,
+    asPath: route.asPath,
     push,
+    prefetch,
   };
 
   return (
@@ -89,4 +119,8 @@ export function RouterProvider({
 
 export function useRouter() {
   return useContext(RouterContext);
+}
+
+export function normalizePathname(pathname) {
+  return pathname === "/" ? "/index" : pathname;
 }

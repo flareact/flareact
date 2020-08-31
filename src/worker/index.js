@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOMServer from "react-dom/server";
 import Document from "../components/_document";
-import { RouterProvider } from "../router";
+import { RouterProvider, normalizePathname } from "../router";
 import { getPage, getPageProps, PageNotFoundError } from "./pages";
 import AppProvider from "../components/AppProvider";
 import { Helmet } from "react-helmet";
@@ -10,17 +10,17 @@ const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
   process.env.NODE_ENV !== "production";
 
-function pageIsApi(page) {
-  return /^\/api\/.+/.test(page);
-}
-
 export async function handleRequest(event, context, fallback) {
   const url = new URL(event.request.url);
   const { pathname } = url;
 
+  if (pathname.startsWith("/_flareact/static")) {
+    return await fallback(event);
+  }
+
   try {
-    if (pathname.startsWith("/_flareact")) {
-      const pagePath = pathname.replace(/\/_flareact|\.json/g, "");
+    if (pathname.startsWith("/_flareact/props")) {
+      const pagePath = pathname.replace(/\/_flareact\/props|\.json/g, "");
 
       return await handleCachedPageRequest(
         event,
@@ -42,32 +42,48 @@ export async function handleRequest(event, context, fallback) {
       );
     }
 
-    const pagePath = pathname === "/" ? "/index" : pathname;
+    const normalizedPathname = normalizePathname(pathname);
 
-    if (pageIsApi(pagePath)) {
-      const page = getPage(pagePath, context);
+    if (pageIsApi(normalizedPathname)) {
+      const page = getPage(normalizedPathname, context);
       return await page.default(event);
     }
 
     return await handleCachedPageRequest(
       event,
       context,
-      pagePath,
+      normalizedPathname,
       (page, props) => {
         const Component = page.default;
+        const App = getPage("/_app", context).default;
+
         const content = ReactDOMServer.renderToString(
-          <RouterProvider initialUrl={event.request.url}>
+          <RouterProvider
+            initialUrl={event.request.url}
+            initialPagePath={page.pagePath}
+          >
             <AppProvider
               Component={Component}
+              App={App}
               pageProps={props}
               context={context}
             />
           </RouterProvider>
         );
 
+        const pageProps = {
+          props,
+          page,
+        };
+
         const helmet = Helmet.renderStatic();
         let html = ReactDOMServer.renderToString(
-          <Document initialData={props} helmet={helmet} />
+          <Document
+            initialData={pageProps}
+            helmet={helmet}
+            page={page}
+            context={context}
+          />
         );
 
         html = html.replace(
@@ -95,7 +111,7 @@ export async function handleRequest(event, context, fallback) {
 async function handleCachedPageRequest(
   event,
   context,
-  pagePath,
+  normalizedPathname,
   generateResponse
 ) {
   const cache = caches.default;
@@ -104,7 +120,7 @@ async function handleCachedPageRequest(
 
   if (!dev && cachedResponse) return cachedResponse;
 
-  const page = getPage(pagePath, context);
+  const page = getPage(normalizedPathname, context);
   const props = await getPageProps(page);
 
   let response = generateResponse(page, props);
@@ -131,4 +147,8 @@ async function handleCachedPageRequest(
 function getCacheKey(request) {
   const url = request.url + "/" + process.env.BUILD_ID;
   return new Request(new URL(url).toString(), request);
+}
+
+function pageIsApi(page) {
+  return /^\/api\/.+/.test(page);
 }
