@@ -87,16 +87,18 @@ export default class PageLoader {
   }
 
   loadPrefetch(path, as) {
+    const url = path.startsWith("/") ? path : "/" + path;
+
     return new Promise((resolve, reject) => {
       if (
-        document.querySelector(`link[rel="${relPrefetch}"][href^="${path}"]`)
+        document.querySelector(`link[rel="${relPrefetch}"][href^="${url}"]`)
       ) {
         return resolve();
       }
 
       const link = document.createElement("link");
       link.rel = relPrefetch;
-      link.href = path;
+      link.href = url;
       link.as = as;
       link.onload = resolve;
       link.onerror = reject;
