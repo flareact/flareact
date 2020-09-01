@@ -3,7 +3,7 @@
   "version": "0.0.0-development",
   "main": "src/index.js",
   "module": "src/index.js",
-  "description": "SSR React framework built for Cloudflare Workers",
+  "description": "Edge-Rendered React framework built for Cloudflare Workers",
   "files": [
     "src",
     "configs",
