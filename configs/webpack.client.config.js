@@ -8,13 +8,14 @@ const defaultLoaders = require("./loaders");
 const webpack = require("webpack");
 const TerserJSPlugin = require("terser-webpack-plugin");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const glob = require("glob");
+const BuildManifestPlugin = require("./webpack/plugins/build-manifest-plugin");
+const crypto = require("crypto");
 
 const projectDir = process.cwd();
 const flareact = flareactConfig(projectDir);
 const dev = process.env.NODE_ENV === "development";
 const isServer = false;
-
-const glob = require("glob");
 
 const pageManifest = glob.sync("./pages/**/*.js");
 
@@ -53,8 +54,21 @@ if (!entry["pages/_app"]) {
   entry["pages/_app"] = pageLoader;
 }
 
-const totalPages = Object.keys(entry).filter((key) => key.includes("pages"))
-  .length;
+const totalPages = Object.keys(entry).filter(
+  (key) => key.includes("pages") && !/pages\/api\//.test(key)
+).length;
+
+// TODO: Revisit
+const isModuleCSS = (module) => {
+  return (
+    // mini-css-extract-plugin
+    module.type === `css/mini-extract` ||
+    // extract-css-chunks-webpack-plugin (old)
+    module.type === `css/extract-chunks` ||
+    // extract-css-chunks-webpack-plugin (new)
+    module.type === `css/extract-css-chunks`
+  );
+};
 
 module.exports = (env, argv) => {
   const config = {
@@ -88,23 +102,68 @@ module.exports = (env, argv) => {
             cacheGroups: {
               default: false,
               vendors: false,
-              styles: {
-                name: "styles",
-                test: /\.css$/,
-                chunks: "all",
-                enforce: true,
-              },
               framework: {
                 chunks: "all",
                 name: "framework",
-                filename: "[name].js",
                 test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types)[\\/]/,
                 priority: 40,
                 // Don't let webpack eliminate this chunk (prevents this chunk from
                 // becoming a part of the commons chunk)
                 enforce: true,
               },
+              // TODO: Write comments for what each chunk does
+              lib: {
+                test(module) {
+                  return (
+                    module.size() > 160000 &&
+                    /node_modules[/\\]/.test(module.identifier())
+                  );
+                },
+                name(module) {
+                  const hash = crypto.createHash("sha1");
+                  if (isModuleCSS(module)) {
+                    module.updateHash(hash);
+                  } else {
+                    if (!module.libIdent) {
+                      throw new Error(
+                        `Encountered unknown module type: ${module.type}. Please open an issue.`
+                      );
+                    }
+
+                    hash.update(module.libIdent({ context: dir }));
+                  }
+
+                  return hash.digest("hex").substring(0, 8);
+                },
+                priority: 30,
+                minChunks: 1,
+                reuseExistingChunk: true,
+              },
+              commons: {
+                name: "commons",
+                minChunks: totalPages,
+                priority: 20,
+              },
+              shared: {
+                name(module, chunks) {
+                  return (
+                    crypto
+                      .createHash("sha1")
+                      .update(
+                        chunks.reduce((acc, chunk) => {
+                          return acc + chunk.name;
+                        }, "")
+                      )
+                      .digest("hex") + (isModuleCSS(module) ? "_CSS" : "")
+                  );
+                },
+                priority: 10,
+                minChunks: 2,
+                reuseExistingChunk: true,
+              },
             },
+            maxInitialRequests: 25,
+            minSize: 20000,
           },
     },
     context: projectDir,
@@ -122,11 +181,7 @@ module.exports = (env, argv) => {
     output: {
       path: path.resolve(projectDir, "out/_flareact/static"),
     },
-    plugins: [
-      new MiniCssExtractPlugin({
-        filename: "[name].css",
-      }),
-    ],
+    plugins: [new MiniCssExtractPlugin(), new BuildManifestPlugin()],
     devServer: {
       contentBase: path.resolve(projectDir, "out"),
       hot: true,

@@ -2,51 +2,88 @@ import React from "react";
 
 const dev = typeof DEV !== "undefined" && !!DEV;
 
-export default function Document({ initialData, helmet, page, context }) {
+export default function Document({
+  initialData,
+  helmet,
+  page,
+  context,
+  buildManifest,
+}) {
   const htmlAttrs = helmet.htmlAttributes.toComponent();
   const bodyAttrs = helmet.bodyAttributes.toComponent();
+  const currentPage = page.page.replace(/^\./, "").replace(/\.(js|css)$/, "");
 
   // TODO: Drop all these props into a context and consume them in individual components
   // so this page can be extended.
 
   return (
     <html lang="en" {...htmlAttrs}>
-      <head>
-        <meta name="viewport" content="width=device-width" />
-        <meta charset="utf-8" />
-        {helmet.title.toComponent()}
-        {helmet.meta.toComponent()}
-        {helmet.link.toComponent()}
-
-        {/* TODO: Find way to not show this when there are no styles */}
-        {!dev && <link href="/_flareact/static/styles.css" rel="stylesheet" />}
-      </head>
+      <FlareactHead
+        helmet={helmet}
+        buildManifest={buildManifest}
+        page={currentPage}
+      />
       <body {...bodyAttrs}>
         <div id="__flareact" />
         <FlareactScripts
           initialData={initialData}
-          page={page}
+          page={currentPage}
           context={context}
+          buildManifest={buildManifest}
         />
       </body>
     </html>
   );
 }
 
-export function FlareactScripts({ initialData, page, context }) {
+export function FlareactHead({ helmet, page, buildManifest }) {
+  let links = new Set();
+
+  if (!dev) {
+    buildManifest.pages["/_app"]
+      .filter((link) => link.endsWith(".css"))
+      .forEach((link) => links.add(link));
+    buildManifest.pages[page]
+      .filter((link) => link.endsWith(".css"))
+      .forEach((link) => links.add(link));
+  }
+
+  return (
+    <head>
+      <meta name="viewport" content="width=device-width" />
+      <meta charset="utf-8" />
+      {helmet.title.toComponent()}
+      {helmet.meta.toComponent()}
+      {helmet.link.toComponent()}
+
+      {[...links].map((link) => (
+        <link href={`/_flareact/static/${link}`} rel="stylesheet" />
+      ))}
+    </head>
+  );
+}
+
+export function FlareactScripts({ initialData, page, buildManifest }) {
   let prefix = dev ? "http://localhost:8080/" : "/";
   prefix += dev ? "" : "_flareact/static/";
-  const pagePrefix = prefix + "pages/";
 
-  const scripts = [
-    "webpack",
-    "main",
-    // FIXME: `styles` is required to make _app with style imports work.
-    // This is silly and I'd love to fix this.
-    !dev && "styles",
-    !dev && "framework",
-  ].filter(Boolean);
-  const pages = ["_app.js", page.page.replace(/^\.\//, "")];
+  let scripts = new Set();
+
+  if (dev) {
+    [
+      "webpack.js",
+      "main.js",
+      `pages/_app.js`,
+      `pages${page}.js`,
+    ].forEach((script) => scripts.add(script));
+  } else {
+    buildManifest.pages["/_app"]
+      .filter((script) => script.endsWith(".js"))
+      .forEach((script) => scripts.add(script));
+    buildManifest.pages[page]
+      .filter((script) => script.endsWith(".js"))
+      .forEach((script) => scripts.add(script));
+  }
 
   return (
     <>
@@ -55,11 +92,8 @@ export function FlareactScripts({ initialData, page, context }) {
         type="text/plain"
         data-json={JSON.stringify(initialData)}
       ></script>
-      {scripts.map((script) => (
-        <script key={script} src={`${prefix}${script}.js`}></script>
-      ))}
-      {pages.map((p) => (
-        <script key={p} src={`${pagePrefix}${p}`}></script>
+      {[...scripts].map((script) => (
+        <script key={script} src={`${prefix}${script}`}></script>
       ))}
     </>
   );
