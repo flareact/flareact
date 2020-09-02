@@ -5,6 +5,7 @@ module.exports = class BuildManifestPlugin {
     const namedChunks = compilation.namedChunks;
 
     const assetMap = {
+      helpers: ["_buildManifest.js"],
       pages: {},
     };
 
@@ -29,6 +30,12 @@ module.exports = class BuildManifestPlugin {
       JSON.stringify(assetMap, null, 2)
     );
 
+    assets["_buildManifest.js"] = new RawSource(
+      `self.__BUILD_MANIFEST = ${generateClientManifest(
+        assetMap
+      )};self.__BUILD_MANIFEST_CB && self.__BUILD_MANIFEST_CB();`
+    );
+
     return assets;
   }
 
@@ -38,3 +45,24 @@ module.exports = class BuildManifestPlugin {
     });
   }
 };
+
+/**
+ * Take an asset map and generate a client version with just pages to be used for
+ * client page routing, loading and transitions.
+ *
+ * @param {object} assetMap
+ */
+function generateClientManifest(assetMap) {
+  let clientManifest = {};
+  const appDependencies = new Set(assetMap.pages["/_app"]);
+
+  Object.entries(assetMap.pages).forEach(([page, files]) => {
+    if (page === "/_app") return;
+
+    const filteredDeps = files.filter((file) => !appDependencies.has(file));
+
+    clientManifest[page] = filteredDeps;
+  });
+
+  return JSON.stringify(clientManifest);
+}

@@ -77,6 +77,7 @@ export function FlareactScripts({ initialData, page, buildManifest }) {
       `pages${page}.js`,
     ].forEach((script) => scripts.add(script));
   } else {
+    buildManifest.helpers.forEach((script) => scripts.add(script));
     buildManifest.pages["/_app"]
       .filter((script) => script.endsWith(".js"))
       .forEach((script) => scripts.add(script));
