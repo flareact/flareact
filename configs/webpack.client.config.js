@@ -98,10 +98,19 @@ module.exports = (env, argv) => {
             },
           }
         : {
+            /**
+             * N.B. most of this is borrowed from Next.js source code. I've tried to comment
+             * my understanding of each item below, but I'm sure there's much to be desired.
+             */
             chunks: "all",
             cacheGroups: {
               default: false,
               vendors: false,
+              /**
+               * First, grab the "normal" things: react, etc from node_modules. These will
+               * for sure be in *every* component, so we might as well pull this out and make
+               * it cacheable.
+               */
               framework: {
                 chunks: "all",
                 name: "framework",
@@ -111,7 +120,11 @@ module.exports = (env, argv) => {
                 // becoming a part of the commons chunk)
                 enforce: true,
               },
-              // TODO: Write comments for what each chunk does
+              /**
+               * OK - we've got the framework out of the way. Next, we're going to pull out any LARGE
+               * modules (> 160kb) that happen to be used in an entrypoint from node_modules. Even if
+               * it's only used by a single chunk - don't care.
+               */
               lib: {
                 test(module) {
                   return (
@@ -139,11 +152,19 @@ module.exports = (env, argv) => {
                 minChunks: 1,
                 reuseExistingChunk: true,
               },
+              /**
+               * Next, commons. I guess if *every single page* uses some of this code, this chunk is generated.
+               * I'm not sure exactly what this would be, or why we care to split it out here instead of e.g. `shared`.
+               */
               commons: {
                 name: "commons",
                 minChunks: totalPages,
                 priority: 20,
               },
+              /**
+               * Here's another chunk. Not sure what the difference is between this and our pal `commons`. I guess this is
+               * reserved for less-common chunks, used by at least two other chunks.
+               */
               shared: {
                 name(module, chunks) {
                   return (
