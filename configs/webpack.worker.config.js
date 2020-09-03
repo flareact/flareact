@@ -5,11 +5,21 @@ const webpack = require("webpack");
 const { flareactConfig } = require("./utils");
 const defaultLoaders = require("./loaders");
 const { nanoid } = require("nanoid");
+const fs = require("fs");
 
 const dev = !!process.env.WORKER_DEV;
 const isServer = true;
 const projectDir = process.cwd();
 const flareact = flareactConfig(projectDir);
+
+const outPath = path.resolve(projectDir, "out");
+
+const buildManifest = dev
+  ? {}
+  : fs.readFileSync(
+      path.join(outPath, "_flareact", "static", "build-manifest.json"),
+      "utf-8"
+    );
 
 module.exports = function (env, argv) {
   let config = {
@@ -22,7 +32,7 @@ module.exports = function (env, argv) {
     new CopyPlugin([
       {
         from: path.resolve(projectDir, "public"),
-        to: path.resolve(projectDir, "out"),
+        to: outPath,
       },
     ])
   );
@@ -33,6 +43,8 @@ module.exports = function (env, argv) {
 
   if (dev) {
     inlineVars.DEV = dev;
+  } else {
+    inlineVars["process.env.BUILD_MANIFEST"] = buildManifest;
   }
 
   config.plugins.push(new webpack.DefinePlugin(inlineVars));

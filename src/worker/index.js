@@ -10,6 +10,8 @@ const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
   process.env.NODE_ENV !== "production";
 
+const buildManifest = dev ? {} : process.env.BUILD_MANIFEST;
+
 export async function handleRequest(event, context, fallback) {
   const url = new URL(event.request.url);
   const { pathname } = url;
@@ -83,6 +85,7 @@ export async function handleRequest(event, context, fallback) {
             helmet={helmet}
             page={page}
             context={context}
+            buildManifest={buildManifest}
           />
         );
 

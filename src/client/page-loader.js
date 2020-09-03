@@ -13,6 +13,14 @@ export default class PageLoader {
     };
 
     this.pageRegisterEvents = mitt();
+
+    this.promisedBuildManifest = new Promise((resolve) => {
+      if (window.__BUILD_MANIFEST) {
+        resolve(window.__BUILD_MANIFEST);
+      } else {
+        window.__BUILD_MANIFEST_CB = () => resolve(window.__BUILD_MANIFEST);
+      }
+    });
   }
 
   async registerPage(route) {
@@ -47,9 +55,23 @@ export default class PageLoader {
       if (!this.loadingRoutes[route]) {
         this.loadingRoutes[route] = true;
 
-        const url = getPagePathUrl(route);
+        if (dev) {
+          const url = getPagePathUrl(route);
+          this.loadScript(url);
+          return;
+        }
 
-        this.loadScript(url);
+        this.getDependencies(route).then((deps) => {
+          deps.forEach((dep) => {
+            const url = getDependencyUrl(dep);
+
+            if (url.endsWith(".js")) {
+              this.loadScript(url);
+            } else {
+              this.loadPrefetch(url, "fetch");
+            }
+          });
+        });
       }
     });
   }
@@ -66,17 +88,33 @@ export default class PageLoader {
     this.loadPrefetch(url, "script");
   }
 
-  prefetch(route) {
-    const url = getPagePathUrl(route);
-
+  async prefetch(route) {
     if (connectionIsSlow()) return;
 
-    this.loadPrefetch(url, "script");
+    if (dev) {
+      const url = getPagePathUrl(route);
+      this.loadPrefetch(url, "script");
+      return;
+    }
+
+    const deps = await this.getDependencies(route);
+    deps.forEach((dep) => {
+      const url = getDependencyUrl(dep);
+
+      const as = url.endsWith(".js") ? "script" : "fetch";
+      this.loadPrefetch(url, as);
+    });
+  }
+
+  async getDependencies(route) {
+    const deps = await this.promisedBuildManifest;
+
+    return deps[route];
   }
 
   loadScript(path) {
     const prefix =
-      process.env.NODE_ENV === "production" ? "/" : "http://localhost:8080/";
+      process.env.NODE_ENV === "production" ? "" : "http://localhost:8080";
     const url = prefix + path;
 
     if (document.querySelector(`script[src^="${url}"]`)) return;
@@ -87,21 +125,19 @@ export default class PageLoader {
   }
 
   loadPrefetch(path, as) {
-    const url = path.startsWith("/") ? path : "/" + path;
-
     return new Promise((resolve, reject) => {
       if (
-        document.querySelector(`link[rel="${relPrefetch}"][href^="${url}"]`)
+        document.querySelector(`link[rel="${relPrefetch}"][href^="${path}"]`)
       ) {
         return resolve();
       }
 
       const link = document.createElement("link");
-      link.rel = relPrefetch;
-      link.href = url;
       link.as = as;
+      link.rel = relPrefetch;
       link.onload = resolve;
       link.onerror = reject;
+      link.href = path;
 
       document.head.appendChild(link);
     });
@@ -112,10 +148,17 @@ export function getPagePropsUrl(pagePath) {
   return `/_flareact/props${pagePath}.json`;
 }
 
+// Used in development only
 function getPagePathUrl(pagePath) {
-  const prefix = dev ? "pages" : "_flareact/static/pages";
+  const prefix = dev ? "/pages" : "/_flareact/static/pages";
 
   return prefix + pagePath + ".js";
+}
+
+function getDependencyUrl(path) {
+  const prefix = dev ? "/" : "/_flareact/static/";
+
+  return prefix + path;
 }
 
 /**
