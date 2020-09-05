@@ -15,12 +15,16 @@ export async function handleEvent(event, context, DEBUG) {
 
   return await handleRequest(event, context, async () => {
     try {
+      options.cacheControl = {
+        // By default, cache static assets for one year
+        browserTTL: 365 * 24 * 60 * 60,
+      };
+
       if (DEBUG) {
         // customize caching
-        options.cacheControl = {
-          bypassCache: true,
-        };
+        options.cacheControl.bypassCache = true;
       }
+
       return await getAssetFromKV(event, options);
     } catch (e) {
       // if an error is thrown try to serve the asset at 404.html
