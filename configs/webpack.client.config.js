@@ -143,7 +143,7 @@ module.exports = (env, argv) => {
                       );
                     }
 
-                    hash.update(module.libIdent({ context: dir }));
+                    hash.update(module.libIdent({ context: __dirname }));
                   }
 
                   return hash.digest("hex").substring(0, 8);
