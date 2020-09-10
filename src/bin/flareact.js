@@ -21,13 +21,15 @@ if (command === "dev") {
   concurrently(
     [
       {
-        command: "WORKER_DEV=true IS_WORKER=true wrangler dev",
+        command: "wrangler dev",
         name: "worker",
+        env: { WORKER_DEV: true, IS_WORKER: true },
       },
       {
         command:
-          "NODE_ENV=development webpack-dev-server --config node_modules/flareact/configs/webpack.client.config.js --mode development",
+          "webpack-dev-server --config node_modules/flareact/configs/webpack.client.config.js --mode development",
         name: "client",
+        env: { NODE_ENV: "development" },
       },
     ],
     {
@@ -50,8 +52,9 @@ if (command === "publish") {
     [
       {
         command:
-          "NODE_ENV=production webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode production && IS_WORKER=true wrangler publish",
+          "webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode production && wrangler publish",
         name: "publish",
+        env: { NODE_ENV: "production", IS_WORKER: true },
       },
     ],
     {
@@ -74,8 +77,9 @@ if (command === "build") {
     [
       {
         command:
-          "NODE_ENV=production webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode production",
+          "webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode production",
         name: "publish",
+        env: { NODE_ENV: "production" },
       },
     ],
     {
