@@ -15,6 +15,7 @@ That means it supports nice API patterns like:
 
 However, it's brand new! So it's also a bunch of these things:
 
+- **It probably does not work on Windows**
 - An early prototype
 - Missing years worth of optimizations the Next.js team has implemented
 - Probably has a heavy bundle
