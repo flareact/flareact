@@ -94,7 +94,7 @@ export default function Link(props) {
   // If child is an <a> tag and doesn't have a href attribute, or if the 'passHref' property is
   // defined, we specify the current 'href', so that repetition is not needed by the user
   if (props.passHref || (child.type === "a" && !("href" in child.props))) {
-    childProps.href = href;
+    childProps.href = as || href;
   }
 
   return React.cloneElement(child, childProps);
