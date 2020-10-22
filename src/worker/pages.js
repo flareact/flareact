@@ -23,11 +23,25 @@ export function resolvePagePath(pagePath, keys) {
       page,
       pagePath: page.replace(/^\./, "").replace(/\.js$/, ""),
       parts,
-      test: new RegExp(test, isDynamic ? "g" : ""),
+      test: new RegExp("^" + test + "$", isDynamic ? "g" : ""),
     };
   });
 
+  /**
+   * Sort pages to include those with `index` in the name first, because
+   * we need those to get matched more greedily than their dynamic counterparts.
+   */
+  pagesMap.sort((a) => (a.page.includes("index") ? -1 : 1));
+
   let page = pagesMap.find((p) => p.test.test(pagePath));
+
+  /**
+   * If an exact match couldn't be found, try giving it another shot with /index at
+   * the end. This helps discover dynamic nested index pages.
+   */
+  if (!page) {
+    page = pagesMap.find((p) => p.test.test(pagePath + "/index"));
+  }
 
   if (!page) return null;
   if (!page.parts.length) return page;

@@ -26,7 +26,12 @@ let entry = {
 pageManifest.forEach((page) => {
   if (/pages\/api\//.test(page)) return;
 
-  const pageName = page.match(/\/(.+)\.js$/)[1];
+  let pageName = page.match(/\/(.+)\.js$/)[1];
+
+  // Flatten any dynamic `index` pages
+  if (pageName !== "pages/index" && pageName.endsWith("/index")) {
+    pageName = pageName.replace(/\/index$/, "");
+  }
 
   const pageLoaderOpts = {
     page: pageName,

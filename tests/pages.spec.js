@@ -23,6 +23,30 @@ it("matches dynamic pages", () => {
   expect(path.params).toEqual({ slug: "hello" });
 });
 
+it("matches dynamic page indexes", () => {
+  const path = resolvePagePath("/posts", [
+    "./index.js",
+    "./apples.js",
+    "./posts/[slug].js",
+    "./posts/index.js",
+  ]);
+
+  expect(path).toBeTruthy();
+  expect(path.page).toBe("./posts/index.js");
+});
+
+it("matches dynamic page indexes matching directory names", () => {
+  const path = resolvePagePath("/posts", [
+    "./index.js",
+    "./apples.js",
+    "./posts/[slug].js",
+    "./posts.js",
+  ]);
+
+  expect(path).toBeTruthy();
+  expect(path.page).toBe("./posts.js");
+});
+
 it("matches longer dynamic pages", () => {
   const path = resolvePagePath("/posts/hello-world-it-me", [
     "./index.js",

@@ -11,7 +11,12 @@ export default function Document({
 }) {
   const htmlAttrs = helmet.htmlAttributes.toComponent();
   const bodyAttrs = helmet.bodyAttributes.toComponent();
-  const currentPage = page.page.replace(/^\./, "").replace(/\.(js|css)$/, "");
+  let currentPage = page.page.replace(/^\./, "").replace(/\.(js|css)$/, "");
+
+  // Flatten dynamic `index.js` pages
+  if (currentPage !== "/index" && currentPage.endsWith("/index")) {
+    currentPage = currentPage.replace(/\/index$/, "");
+  }
 
   // TODO: Drop all these props into a context and consume them in individual components
   // so this page can be extended.
