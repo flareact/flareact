@@ -27,10 +27,18 @@ export function resolvePagePath(pagePath, keys) {
     };
   });
 
+  /**
+   * Sort pages to include those with `index` in the name first, because
+   * we need those to get matched more greedily than their dynamic counterparts.
+   */
   pagesMap.sort((a) => (a.page.includes("index") ? -1 : 1));
 
   let page = pagesMap.find((p) => p.test.test(pagePath));
 
+  /**
+   * If an exact match couldn't be found, try giving it another shot with /index at
+   * the end. This helps discover dynamic nested index pages.
+   */
   if (!page) {
     page = pagesMap.find((p) => p.test.test(pagePath + "/index"));
   }

@@ -28,6 +28,7 @@ pageManifest.forEach((page) => {
 
   let pageName = page.match(/\/(.+)\.js$/)[1];
 
+  // Flatten any dynamic `index` pages
   if (pageName !== "pages/index" && pageName.endsWith("/index")) {
     pageName = pageName.replace(/\/index$/, "");
   }
