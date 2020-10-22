@@ -23,7 +23,12 @@ module.exports = class BuildManifestPlugin {
         (file) => file.endsWith(".css") || file.endsWith(".js")
       );
 
-      assetMap.pages[`/${pagePath[1]}`] = [...mainJsFiles, ...pageFiles];
+      let pageName = pagePath[1];
+
+      // Flatten any dynamic `index` pages
+      pageName = pageName.replace(/\/index/, "");
+
+      assetMap.pages[`/${pageName}`] = [...mainJsFiles, ...pageFiles];
     }
 
     assets["build-manifest.json"] = new RawSource(
