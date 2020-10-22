@@ -23,7 +23,7 @@ it("matches dynamic pages", () => {
   expect(path.params).toEqual({ slug: "hello" });
 });
 
-it.only("matches dynamic page indexes", () => {
+it("matches dynamic page indexes", () => {
   const path = resolvePagePath("/posts", [
     "./index.js",
     "./apples.js",
