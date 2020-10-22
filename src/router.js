@@ -1,8 +1,5 @@
 import React, { useContext, useState, useEffect, useMemo } from "react";
-import {
-  convertSearchParamsToQueryObject,
-  extractDynamicParams,
-} from "./utils";
+import { extractDynamicParams } from "./utils";
 import { DYNAMIC_PAGE } from "./worker/pages";
 
 const RouterContext = React.createContext();
@@ -38,11 +35,16 @@ export function RouterProvider({
   }, [route.asPath, route.href]);
 
   const query = useMemo(() => {
+    const url = new URL(
+      window.location.protocol + window.location.host + route.asPath
+    );
+    const queryParams = Object.fromEntries(url.searchParams.entries());
+
     return {
-      ...convertSearchParamsToQueryObject(searchParams),
+      ...queryParams,
       ...params,
     };
-  }, [searchParams, params]);
+  }, [route.asPath, params]);
 
   useEffect(() => {
     async function loadNewPage() {

@@ -5,7 +5,6 @@ import { RouterProvider, normalizePathname } from "../router";
 import { getPage, getPageProps, PageNotFoundError } from "./pages";
 import AppProvider from "../components/AppProvider";
 import { Helmet } from "react-helmet";
-import { convertSearchParamsToQueryObject } from "../utils";
 
 const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
@@ -16,7 +15,7 @@ const buildManifest = dev ? {} : process.env.BUILD_MANIFEST;
 export async function handleRequest(event, context, fallback) {
   const url = new URL(event.request.url);
   const { pathname, searchParams } = url;
-  const query = convertSearchParamsToQueryObject(searchParams);
+  const query = Object.fromEntries(searchParams.entries());
 
   if (pathname.startsWith("/_flareact/static")) {
     return await fallback(event);

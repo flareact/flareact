@@ -1,12 +1,5 @@
 import { DYNAMIC_PAGE } from "./worker/pages";
 
-export function convertSearchParamsToQueryObject(searchParams) {
-  return [...searchParams.entries()].reduce((query, [key, value]) => {
-    query[key] = value;
-    return query;
-  }, {});
-}
-
 /**
  * Extract dynamic params from a slug path. For use in the router, but should eventually
  * be refactored to share responsibilities with the /worker/pages.js module.
