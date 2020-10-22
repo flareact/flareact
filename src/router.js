@@ -13,7 +13,7 @@ export function RouterProvider({
   initialComponent,
   pageLoader,
 }) {
-  const { pathname: initialPathname, search, searchParams } = new URL(
+  const { protocol, host, pathname: initialPathname, search } = new URL(
     initialUrl
   );
   const [route, setRoute] = useState({
@@ -35,16 +35,14 @@ export function RouterProvider({
   }, [route.asPath, route.href]);
 
   const query = useMemo(() => {
-    const url = new URL(
-      window.location.protocol + window.location.host + route.asPath
-    );
+    const url = new URL(protocol + "//" + host + route.asPath);
     const queryParams = Object.fromEntries(url.searchParams.entries());
 
     return {
       ...queryParams,
       ...params,
     };
-  }, [route.asPath, params]);
+  }, [protocol, host, route.asPath, params]);
 
   useEffect(() => {
     async function loadNewPage() {
