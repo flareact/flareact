@@ -1,4 +1,6 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useMemo } from "react";
+import { extractDynamicParams } from "./utils";
+import { DYNAMIC_PAGE } from "./worker/pages";
 
 const RouterContext = React.createContext();
 
@@ -11,16 +13,36 @@ export function RouterProvider({
   initialComponent,
   pageLoader,
 }) {
-  const { pathname: initialPathname } = new URL(initialUrl);
+  const { protocol, host, pathname: initialPathname, search } = new URL(
+    initialUrl
+  );
   const [route, setRoute] = useState({
     href: initialPagePath,
-    asPath: initialPathname,
+    asPath: initialPathname + search,
   });
   const [initialPath, setInitialPath] = useState(initialPathname);
   const [component, setComponent] = useState({
     Component: initialComponent,
     pageProps: null,
   });
+
+  const params = useMemo(() => {
+    const isDynamic = DYNAMIC_PAGE.test(route.href);
+
+    if (!isDynamic) return {};
+
+    return extractDynamicParams(route.href, route.asPath);
+  }, [route.asPath, route.href]);
+
+  const query = useMemo(() => {
+    const url = new URL(protocol + "//" + host + route.asPath);
+    const queryParams = Object.fromEntries(url.searchParams.entries());
+
+    return {
+      ...queryParams,
+      ...params,
+    };
+  }, [protocol, host, route.asPath, params]);
 
   useEffect(() => {
     async function loadNewPage() {
@@ -110,6 +132,7 @@ export function RouterProvider({
     asPath: route.asPath,
     push,
     prefetch,
+    query,
   };
 
   return (
