@@ -1,6 +1,6 @@
 import App from "../components/_app";
 
-const DYNAMIC_PAGE = new RegExp("\\[(\\w+)\\]", "g");
+export const DYNAMIC_PAGE = new RegExp("\\[(\\w+)\\]", "g");
 
 export function resolvePagePath(pagePath, keys) {
   const pagesMap = keys.map((page) => {
@@ -65,15 +65,20 @@ export function getPage(pagePath, context) {
   }
 }
 
-export async function getPageProps(page) {
+export async function getPageProps(page, query) {
   let pageProps = {};
 
   const params = page.params || {};
 
   const fetcher = page.getEdgeProps || page.getStaticProps;
 
+  const queryObject = {
+    ...query,
+    ...params,
+  };
+
   if (fetcher) {
-    const { props, revalidate } = await fetcher({ params });
+    const { props, revalidate } = await fetcher({ params, query: queryObject });
 
     pageProps = {
       ...props,

@@ -145,7 +145,8 @@ export default class PageLoader {
 }
 
 export function getPagePropsUrl(pagePath) {
-  return `/_flareact/props${pagePath}.json`;
+  const [basePath, search] = pagePath.split("?");
+  return `/_flareact/props${basePath}.json${search ? "?" + search : ""}`;
 }
 
 // Used in development only

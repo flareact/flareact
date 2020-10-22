@@ -5,6 +5,7 @@ import { RouterProvider, normalizePathname } from "../router";
 import { getPage, getPageProps, PageNotFoundError } from "./pages";
 import AppProvider from "../components/AppProvider";
 import { Helmet } from "react-helmet";
+import { convertSearchParamsToQueryObject } from "../utils";
 
 const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
@@ -14,7 +15,8 @@ const buildManifest = dev ? {} : process.env.BUILD_MANIFEST;
 
 export async function handleRequest(event, context, fallback) {
   const url = new URL(event.request.url);
-  const { pathname } = url;
+  const { pathname, searchParams } = url;
+  const query = convertSearchParamsToQueryObject(searchParams);
 
   if (pathname.startsWith("/_flareact/static")) {
     return await fallback(event);
@@ -28,6 +30,7 @@ export async function handleRequest(event, context, fallback) {
         event,
         context,
         pagePath,
+        query,
         (_, props) => {
           return new Response(
             JSON.stringify({
@@ -55,6 +58,7 @@ export async function handleRequest(event, context, fallback) {
       event,
       context,
       normalizedPathname,
+      query,
       (page, props) => {
         const Component = page.default;
         const App = getPage("/_app", context).default;
@@ -115,6 +119,7 @@ async function handleCachedPageRequest(
   event,
   context,
   normalizedPathname,
+  query,
   generateResponse
 ) {
   const cache = caches.default;
@@ -124,7 +129,7 @@ async function handleCachedPageRequest(
   if (!dev && cachedResponse) return cachedResponse;
 
   const page = getPage(normalizedPathname, context);
-  const props = await getPageProps(page);
+  const props = await getPageProps(page, query);
 
   let response = generateResponse(page, props);
 
