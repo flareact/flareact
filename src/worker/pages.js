@@ -23,15 +23,17 @@ export function resolvePagePath(pagePath, keys) {
       page,
       pagePath: page.replace(/^\./, "").replace(/\.js$/, ""),
       parts,
-      test: new RegExp("^" + test, isDynamic ? "g" : ""),
+      test: new RegExp("^" + test + "$", isDynamic ? "g" : ""),
     };
   });
 
   pagesMap.sort((a) => (a.page.includes("index") ? -1 : 1));
 
-  let page = !pagePath.endsWith("/index")
-    ? pagesMap.find((p) => p.test.test(pagePath + "/index"))
-    : pagesMap.find((p) => p.test.test(pagePath));
+  let page = pagesMap.find((p) => p.test.test(pagePath));
+
+  if (!page) {
+    page = pagesMap.find((p) => p.test.test(pagePath + "/index"));
+  }
 
   if (!page) return null;
   if (!page.parts.length) return page;
