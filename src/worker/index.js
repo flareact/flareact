@@ -123,15 +123,42 @@ async function handleCachedPageRequest(
 ) {
   const cache = caches.default;
   const cacheKey = getCacheKey(event.request);
-  const cachedResponse = await cache.match(cacheKey);
+  let response = await cache.match(cacheKey);
+  let props;
 
-  if (!dev && cachedResponse) return cachedResponse;
+  if (!response) {
+    const page = getPage(normalizedPathname, context);
+    props = await getPageProps(page, query);
 
-  const page = getPage(normalizedPathname, context);
-  const props = await getPageProps(page, query);
+    response = generateResponse(page, props);
+  }
 
-  let response = generateResponse(page, props);
+  event.waitUntil(async () => {
+    // FIXME: How do we not run this *every single request* yet still
+    // look up the `revalidate` value?
+    if (!props) {
+      props = await getPageProps(page, query);
+    }
 
+    // We only add the max-age header to a new (uncached) response
+    // because one pulled from cache will already have it.
+    if (shouldCacheResponse(response, props)) {
+      const ONE_YEAR_IN_SECONDS = 60 * 60 * 24 * 365;
+      response.headers.append(
+        "Cache-Control",
+        `max-age=${ONE_YEAR_IN_SECONDS}`
+      );
+    }
+
+    if (shouldCache) {
+      await cache.put(cacheKey, response.clone());
+    }
+  });
+
+  return response;
+}
+
+function shouldCacheResponse(response, props) {
   // Cache by default
   let shouldCache = true;
 
@@ -140,15 +167,11 @@ async function handleCachedPageRequest(
     if (props.revalidate === 0) {
       shouldCache = false;
     } else {
-      response.headers.append("Cache-Control", `max-age=${props.revalidate}`);
+      shouldCache = response.headers.get("age") > props.revalidate;
     }
   }
 
-  if (shouldCache) {
-    await cache.put(cacheKey, response.clone());
-  }
-
-  return response;
+  return shouldCache;
 }
 
 function getCacheKey(request) {
