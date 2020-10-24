@@ -28,7 +28,7 @@ module.exports = function ({ dev, isServer }) {
     module: {
       rules: [
         {
-          test: /\.js$/,
+          test: /\.(js|jsx|ts|tsx)$/,
           exclude: /node_modules\/(?!(flareact)\/).*/,
           use: loaders.babel,
         },
