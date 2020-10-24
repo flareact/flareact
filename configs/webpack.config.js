@@ -51,5 +51,8 @@ module.exports = function ({ dev, isServer }) {
         },
       ],
     },
+    resolve: {
+      extensions: ['.js', '.json', '.jsx', '.ts', '.tsx']
+    }
   };
 };
