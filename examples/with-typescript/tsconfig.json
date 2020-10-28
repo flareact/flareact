@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "es5",
+    "lib": [
+      "esnext",
+      "webworker"
+    ],
+    "module": "commonjs",
+    "jsx": "react",
+    "noImplicitAny": false,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": [
+    "./index.ts",
+    "pages",
+    "./node_modules/@cloudflare/workers-types/index.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
