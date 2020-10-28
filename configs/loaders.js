@@ -8,6 +8,8 @@ module.exports = function ({ dev, isServer }) {
           "react-require",
           "@babel/plugin-transform-runtime",
           Boolean(dev && !isServer) && require.resolve("react-refresh/babel"),
+          !isServer &&
+            require.resolve("./babel/plugins/flareact-edge-transform"),
         ].filter(Boolean),
       },
     },
