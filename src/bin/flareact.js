@@ -13,9 +13,28 @@ dotenv.config();
   }
 });
 
-const command = process.argv[2];
+const yargs = require("yargs");
 
-if (command === "dev") {
+const argv = yargs
+  .command("dev", "Starts a Flareact development server")
+  .command("publish", "Builds Flareact for production and deploys it", {
+    env: {
+      description: "The Cloudflare Workers environment to target",
+      type: "string",
+    },
+  })
+  .command("build", "Builds Flareact for production")
+  .help()
+  .command({
+    command: "*",
+    handler() {
+      yargs.showHelp();
+    },
+  })
+  .demandCommand()
+  .alias("help", "h").argv;
+
+if (argv._.includes("dev")) {
   console.log("Starting Flareact dev server...");
 
   concurrently(
@@ -45,14 +64,21 @@ if (command === "dev") {
   );
 }
 
-if (command === "publish") {
-  console.log("Publishing your Flareact project to Cloudflare...");
+if (argv._.includes("publish")) {
+  const destination = argv.env ? `${argv.env} on Cloudflare` : "Cloudflare";
+
+  console.log(`Publishing your Flareact project to ${destination}...`);
+
+  let wranglerPublish = `wrangler publish`;
+
+  if (argv.env) {
+    wranglerPublish += ` --env ${argv.env}`;
+  }
 
   concurrently(
     [
       {
-        command:
-          "webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode production && wrangler publish",
+        command: `webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode production && ${wranglerPublish}`,
         name: "publish",
         env: { NODE_ENV: "production", IS_WORKER: true },
       },
@@ -70,7 +96,7 @@ if (command === "publish") {
   );
 }
 
-if (command === "build") {
+if (argv._.includes("build")) {
   console.log("Building your Flareact project for production...");
 
   concurrently(
