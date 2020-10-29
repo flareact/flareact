@@ -35,7 +35,7 @@ module.exports = function ({ dev, isServer }) {
         {
           test: /\.css$/,
           use: isServer
-            ? "null-loader"
+            ? require.resolve("null-loader")
             : [
                 finalStyleLoader(),
                 { loader: "css-loader", options: { importLoaders: 1 } },
