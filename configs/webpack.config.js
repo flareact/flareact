@@ -34,20 +34,22 @@ module.exports = function ({ dev, isServer }) {
         },
         {
           test: /\.css$/,
-          use: [
-            finalStyleLoader(),
-            { loader: "css-loader", options: { importLoaders: 1 } },
-            {
-              loader: "postcss-loader",
-              options: {
-                config: {
-                  path: fileExistsInDir(process.cwd(), "postcss.config.js")
-                    ? process.cwd()
-                    : path.resolve(__dirname),
+          use: isServer
+            ? require.resolve("null-loader")
+            : [
+                finalStyleLoader(),
+                { loader: "css-loader", options: { importLoaders: 1 } },
+                {
+                  loader: "postcss-loader",
+                  options: {
+                    config: {
+                      path: fileExistsInDir(process.cwd(), "postcss.config.js")
+                        ? process.cwd()
+                        : path.resolve(__dirname),
+                    },
+                  },
                 },
-              },
-            },
-          ],
+              ],
         },
       ],
     },
