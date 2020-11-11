@@ -65,7 +65,9 @@ if (argv._.includes("dev")) {
 }
 
 if (argv._.includes("publish")) {
-  console.log("Publishing your Flareact project to Cloudflare...");
+  const destination = argv.env ? `${argv.env} on Cloudflare` : "Cloudflare";
+
+  console.log(`Publishing your Flareact project to ${destination}...`);
 
   let wranglerPublish = `wrangler publish`;
 
