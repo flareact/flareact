@@ -5,8 +5,10 @@ import { RouterProvider } from "../router";
 import AppProvider from "../components/AppProvider";
 
 const initialData = JSON.parse(
-  document.getElementById("initial-data").getAttribute("data-json")
+  document.getElementById("__FLAREACT_DATA").textContent
 );
+
+window.__FLAREACT_DATA = initialData;
 
 const pagePath = initialData.page.pagePath;
 const pageLoader = new PageLoader(pagePath);
