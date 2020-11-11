@@ -19,9 +19,6 @@ module.exports = require("babel-loader").custom((babel) => {
         }
 
         if (isPageFile) {
-          console.log(
-            `${filename} is a page file and this is not on the server`
-          );
           plugins.push(require.resolve("./plugins/flareact-edge-transform"));
         }
       }
