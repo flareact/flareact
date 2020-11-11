@@ -1,14 +1,12 @@
+const path = require("path");
+
 module.exports = function ({ dev, isServer }) {
   return {
     babel: {
-      loader: "babel-loader",
+      loader: path.join(__dirname, "babel/flareact-babel-loader.js"),
       options: {
-        presets: ["@babel/preset-env", "@babel/preset-react"],
-        plugins: [
-          "react-require",
-          "@babel/plugin-transform-runtime",
-          Boolean(dev && !isServer) && require.resolve("react-refresh/babel"),
-        ].filter(Boolean),
+        dev,
+        isServer,
       },
     },
   };
