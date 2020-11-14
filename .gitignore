@@ -20,3 +20,6 @@ yarn-debug.log*
 yarn-error.log*
 
 .vscode/settings.json
+
+# examples: ignore yarn.lock as to include the latest possible version
+examples/*/yarn.lock
