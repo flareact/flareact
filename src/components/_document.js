@@ -1,4 +1,5 @@
 import React from "react";
+import { htmlEscapeJsonString } from "../utils";
 
 const dev = typeof DEV !== "undefined" && !!DEV;
 
@@ -94,9 +95,11 @@ export function FlareactScripts({ initialData, page, buildManifest }) {
   return (
     <>
       <script
-        id="initial-data"
-        type="text/plain"
-        data-json={JSON.stringify(initialData)}
+        id="__FLAREACT_DATA"
+        type="application/json"
+        dangerouslySetInnerHTML={{
+          __html: htmlEscapeJsonString(JSON.stringify(initialData)),
+        }}
       ></script>
       {[...scripts].map((script) => (
         <script key={script} src={`${prefix}${script}`}></script>

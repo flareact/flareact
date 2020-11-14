@@ -21,7 +21,7 @@ export default function Index({ posts = [] }) {
         {posts.map((post) => {
           return (
             <div key={post.id} className="post">
-              <Link href={`/posts/${post.slug}`}>
+              <Link href="/posts/[slug]" as={`/posts/${post.slug}`}>
                 <a>{post.title.rendered}</a>
               </Link>
             </div>
