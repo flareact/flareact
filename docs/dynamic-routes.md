@@ -57,3 +57,7 @@ function Post() {
   const { category, slug } = router.query;
 }
 ```
+
+## Resources
+
+- [Linking to Dynamic Routes](/docs/flareact-link#dynamic-routes)
