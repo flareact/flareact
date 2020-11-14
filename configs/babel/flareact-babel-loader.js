@@ -25,7 +25,12 @@ module.exports = require("babel-loader").custom((babel) => {
 
       return {
         ...cfg.options,
-        presets: ["@babel/preset-env", "@babel/preset-react", ...(cfg.options.presets || [])],
+        presets: [
+          "@babel/preset-env",
+          "@babel/preset-react",
+          "@babel/preset-typescript",
+          ...(cfg.options.presets || []),
+        ],
         plugins: [...plugins, ...(cfg.options.plugins || [])],
       };
     },
