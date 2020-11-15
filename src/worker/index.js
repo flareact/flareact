@@ -50,7 +50,21 @@ export async function handleRequest(event, context, fallback) {
 
     if (pageIsApi(normalizedPathname)) {
       const page = getPage(normalizedPathname, context);
-      return await page.default(event);
+      const response = await page.default(event);
+
+      if (response instanceof Object && !(response instanceof Response)) {
+        return new Response(JSON.stringify(response), {
+          headers: {
+            "content-type": "application/json",
+          },
+        });
+      }
+
+      if (!(response instanceof Response)) {
+        return new Response(response);
+      }
+
+      return response;
     }
 
     return await handleCachedPageRequest(
