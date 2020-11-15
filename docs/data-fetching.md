@@ -83,7 +83,8 @@ To recap:
 A couple things to note about `getEdgeProps`:
 
 - The code you write will **always run on the edge** in a Worker context. This means it will _never_ run client-side in the browser.
-- Additionally, any code and imports included and used exclusively for `getEdgeProps` will be removed automatically from your client-side builds. This means you can import heavy worker-side libraries without having to worry about impacting your client runtime performance 😍
+- You can use `fetch` natively within `getEdgeProps` without needing to require any polyfills, because it is a first-class WebWorker API supported by Workers.
+- Code and imports included and used exclusively for `getEdgeProps` will be removed automatically from your client-side builds. This means you can import heavy worker-side libraries without having to worry about impacting your client runtime performance 😍
 - In a worker context, **you DO NOT have access to the filesystem**. This means anything that references the Node.js `fs` module will throw errors.
 - You can only define `getEdgeProps` for page components living in your `/pages` directory - not for any other components living elsewhere.
 - Transitioning from Next.js? `getStaticProps` is aliased to `getEdgeProps`, so you don't need to make any changes!

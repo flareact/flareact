@@ -17,3 +17,5 @@ For an API route to work, you need to export a default function (a **request han
 Your API method must return a new instance of [`Response`](https://developers.cloudflare.com/workers/reference/apis/response/).
 
 API routes handle requests exactly like [standard Cloudflare Worker requests](https://developers.cloudflare.com/workers/about/how-it-works/), except that you **do not need to call `event.respondWith`**.
+
+**Note**: You can use `fetch` natively within `getEdgeProps` without needing to require any polyfills, because it is a first-class WebWorker API supported by Workers.
