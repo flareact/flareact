@@ -12,7 +12,7 @@ export default function Document({
 }) {
   const htmlAttrs = helmet.htmlAttributes.toComponent();
   const bodyAttrs = helmet.bodyAttributes.toComponent();
-  let currentPage = page.page.replace(/^\./, "").replace(/\.(js|css)$/, "");
+  let currentPage = page.page.replace(/^\./, "").replace(/\.(js|css|jsx|ts|tsx)$/, "");
 
   // Flatten dynamic `index.js` pages
   if (currentPage !== "/index" && currentPage.endsWith("/index")) {

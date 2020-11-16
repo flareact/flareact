@@ -73,3 +73,18 @@ it("matches multiple dynamic pages", () => {
     slug: "hello-world-it-me",
   });
 });
+
+it("matches multiple dynamic tsx pages", () => {
+  const path = resolvePagePath("/posts/typescript/now-supported", [
+    "./index.tsx",
+    "./apples.tsx",
+    "./posts/[category]/[slug].tsx",
+  ]);
+
+  expect(path).toBeTruthy();
+  expect(path.page).toBe("./posts/[category]/[slug].tsx");
+  expect(path.params).toEqual({
+    category: "typescript",
+    slug: "now-supported",
+  });
+});
