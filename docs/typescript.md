@@ -1,6 +1,6 @@
 # TypeScript Support
 
-Flareact supports TypeScript out of the box (**currently in `alpha`**.
+Flareact supports TypeScript out of the box (**currently in `alpha`**).
 
 To get started, add `typescript` to your project:
 
