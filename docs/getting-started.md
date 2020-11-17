@@ -2,13 +2,13 @@
 
 Howdy! Let's get you set up with Flareact.
 
-It's important to know that you must have a [Cloudflare account](https://cloudflare.com/) with a **paid (\$5/mo) Bundled plan** to use Flareact.
+It's important to know that you must have a [Cloudflare account](https://cloudflare.com/) to use Flareact.
 
 ## Quickstart
 
 If you want to get started right now, you can click the button below to fork the `flareact-template` repo and set up your account without installing any CLI tools:
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button?paid=true)](https://deploy.workers.cloudflare.com/?url=https://github.com/flareact/flareact-template&paid=true)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/flareact/flareact-template)
 
 Otherwise, follow the instructions below to get started.
 
