@@ -1,4 +1,5 @@
 const { RawSource } = require("webpack-sources");
+const fs = require("fs");
 
 module.exports = class BuildManifestPlugin {
   createAssets(compilation, assets) {
@@ -30,6 +31,18 @@ module.exports = class BuildManifestPlugin {
 
       assetMap.pages[`/${pageName}`] = [...mainJsFiles, ...pageFiles];
     }
+
+    assetMap.pages["criticalCss"] = [...assetMap.pages["/_app"]]
+      .filter((file) => file.endsWith(".css"))
+      .map((file) => {
+        const path = `out/_flareact/static/${file}`;
+        if (!fs.existsSync(path)) return file;
+        return fs.readFileSync(path, "utf8");
+      });
+
+    assetMap.pages["/_app"] = assetMap.pages["/_app"].filter(
+      (file) => !file.endsWith(".css")
+    );
 
     assets["build-manifest.json"] = new RawSource(
       JSON.stringify(assetMap, null, 2)
