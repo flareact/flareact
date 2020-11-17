@@ -6,6 +6,17 @@ const { fileExistsInDir } = require("./utils");
 module.exports = function ({ dev, isServer }) {
   const loaders = defaultLoaders({ dev, isServer });
 
+  const postCssLoader = {
+    loader: "postcss-loader",
+    options: {
+      config: {
+        path: fileExistsInDir(process.cwd(), "postcss.config.js")
+          ? process.cwd()
+          : path.resolve(__dirname),
+      },
+    },
+  };
+
   const cssExtractLoader = {
     loader: MiniCssExtractPlugin.loader,
   };
@@ -42,17 +53,61 @@ module.exports = function ({ dev, isServer }) {
             : [
                 finalStyleLoader(),
                 { loader: "css-loader", options: { importLoaders: 1 } },
-                {
-                  loader: "postcss-loader",
-                  options: {
-                    config: {
-                      path: fileExistsInDir(process.cwd(), "postcss.config.js")
-                        ? process.cwd()
-                        : path.resolve(__dirname),
-                    },
-                  },
-                },
+                postCssLoader,
               ],
+        },
+        {
+          test: /\.module\.css$/,
+          use: isServer
+            ? require.resolve("null-loader")
+            : [
+                finalStyleLoader(),
+                {
+                  loader: "css-loader",
+                  options: { importLoaders: 1, modules: true },
+                },
+                postCssLoader,
+              ],
+        },
+        {
+          test: /\.scss$/i,
+          use: [
+            finalStyleLoader(),
+            {
+              loader: "css-loader",
+              options: { importLoaders: 1 },
+            },
+            {
+              loader: "sass-loader",
+              options: {
+                implementation: require("sass"),
+                sassOptions: {
+                  fiber: require("fibers"),
+                },
+              },
+            },
+            postCssLoader,
+          ],
+        },
+        {
+          test: /\.module\.scss$/i,
+          use: [
+            finalStyleLoader(),
+            {
+              loader: "css-loader",
+              options: { importLoaders: 1, modules: true },
+            },
+            {
+              loader: "sass-loader",
+              options: {
+                implementation: require("sass"),
+                sassOptions: {
+                  fiber: require("fibers"),
+                },
+              },
+            },
+            postCssLoader,
+          ],
         },
       ],
     },
