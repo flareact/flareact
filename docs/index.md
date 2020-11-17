@@ -6,7 +6,7 @@ It features **file-based page routing** with dynamic page paths and **edge-side 
 
 Flareact is modeled after the terrific [Next.js](https://nextjs.org/) project and its APIs. If you're transitioning from Next.js, a lot of the APIs will seem familiar, _if not identical_!
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button?paid=true)](https://deploy.workers.cloudflare.com/?url=https://github.com/flareact/flareact-template)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/flareact/flareact-template)
 
 ## Overview
 
