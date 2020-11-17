@@ -210,6 +210,7 @@ module.exports = (env, argv) => {
     },
     plugins: [new MiniCssExtractPlugin(), new BuildManifestPlugin()],
     devServer: {
+      index: "",
       contentBase: path.resolve(projectDir, "out"),
       hot: true,
       hotOnly: true,
@@ -217,6 +218,10 @@ module.exports = (env, argv) => {
       noInfo: true,
       headers: {
         "access-control-allow-origin": "*",
+      },
+      proxy: {
+        "/": "http://localhost:8787",
+        "/_flareact": "http://localhost:8787",
       },
     },
     devtool: dev ? "source-map" : false,

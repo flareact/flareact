@@ -35,7 +35,7 @@ const argv = yargs
   .alias("help", "h").argv;
 
 if (argv._.includes("dev")) {
-  console.log("Starting Flareact dev server...");
+  console.log("🚀 Starting Flareact dev server on http://localhost:8080 ...\n");
 
   concurrently(
     [
