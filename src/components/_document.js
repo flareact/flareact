@@ -61,6 +61,7 @@ export function FlareactHead({ helmet, page, buildManifest }) {
       {helmet.title.toComponent()}
       {helmet.meta.toComponent()}
       {helmet.link.toComponent()}
+      {helmet.script.toComponent()}
 
       {[...links].map((link) => (
         <link href={`/_flareact/static/${link}`} rel="stylesheet" />
