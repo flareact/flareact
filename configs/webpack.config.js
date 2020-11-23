@@ -25,6 +25,9 @@ module.exports = function ({ dev, isServer }) {
     context: process.cwd(),
     plugins: [new MiniCssExtractPlugin()],
     stats: "errors-warnings",
+    watchOptions: {
+      ignored: 'node_modules/**'
+    },
     module: {
       rules: [
         {
