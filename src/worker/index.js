@@ -144,6 +144,11 @@ async function handleCachedPageRequest(
   const page = getPage(normalizedPathname, context);
   const props = await getPageProps(page, query);
 
+  // If custom response detected, direct return
+  if(props && props.response && props.response instanceof Response) {
+    return props.response
+  }
+
   let response = generateResponse(page, props);
 
   // Cache by default
