@@ -144,6 +144,22 @@ async function handleCachedPageRequest(
   const page = getPage(normalizedPathname, context);
   const props = await getPageProps(page, query);
 
+  // If custom response detected, direct return
+  if(props && props.redirect) {
+    // redirect should be used in condition when necessary, if so, warn with path.
+    if(Object.keys(props).length !== 1 && dev) {
+      console.log("[Error] in \"" + page.pagePath + "\", \"redirect\" without condition is strongly not recommended!")
+    }
+    // catch wrong config and make a waring.
+    if(props.redirect && !props.redirect.destination && dev) {
+      console.log("[Error] in \"" + page.pagePath + "\", \"redirect\" has no destination!")
+    }
+    // redirect in getEdgeProps has only 2 property, destination & permanent
+    if(props.redirect.destination) {
+      return Response.redirect(props.redirect.destination, props.redirect.permanent ? 308 : 307)
+    }
+  }
+
   let response = generateResponse(page, props);
 
   // Cache by default
