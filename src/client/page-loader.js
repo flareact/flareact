@@ -79,6 +79,13 @@ export default class PageLoader {
   async loadPageProps(pagePath) {
     const url = getPagePropsUrl(pagePath);
     const res = await fetch(url);
+
+    if (res.redirected) {
+      window.history.back();
+
+      return { redirected: true };
+    }
+
     return await res.json();
   }
 

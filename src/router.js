@@ -50,17 +50,33 @@ export function RouterProvider({
       const pagePath = normalizePathname(href);
       const normalizedAsPath = normalizePathname(asPath);
 
-      if (!pageCache[normalizedAsPath]) {
-        const page = await pageLoader.loadPage(pagePath);
-        const { pageProps } = await pageLoader.loadPageProps(normalizedAsPath);
+      let component = pageCache[normalizedAsPath];
 
-        pageCache[normalizedAsPath] = {
+      if (!component) {
+        const page = await pageLoader.loadPage(pagePath);
+        const { pageProps, redirected } = await pageLoader.loadPageProps(
+          normalizedAsPath
+        );
+
+        if (redirected) {
+          return;
+        }
+
+        const { revalidate } = pageProps;
+
+        const pageOptions = {
           Component: page,
           pageProps,
         };
+
+        if (typeof revalidate === "undefined" || revalidate !== 0) {
+          pageCache[normalizedAsPath] = pageOptions;
+        }
+
+        component = pageOptions;
       }
 
-      setComponent(pageCache[normalizedAsPath]);
+      setComponent(component);
     }
 
     if (initialPath === route.asPath) {
