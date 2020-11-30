@@ -10,7 +10,9 @@ export async function render({ page, props, context, event, buildManifest }) {
   const App = getPage("/_app", context).default;
   const Document = getPage("/_document", context).default;
 
-  const renderPage = () => {
+  const renderPage = (options) => {
+    const EnhancedApp = options.enhanceApp ? options.enhanceApp(App) : App;
+
     const html = ReactDOMServer.renderToString(
       <RouterProvider
         initialUrl={event.request.url}
@@ -18,7 +20,7 @@ export async function render({ page, props, context, event, buildManifest }) {
       >
         <AppProvider
           Component={Component}
-          App={App}
+          App={EnhancedApp}
           pageProps={props}
           context={context}
         />

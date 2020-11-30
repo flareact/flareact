@@ -7,7 +7,9 @@ const DocumentContext = createContext();
 
 export default class Document extends Component {
   static async getEdgeProps(ctx) {
-    const { html } = await ctx.renderPage();
+    const enhanceApp = (App) => (props) => <App {...props} />;
+
+    const { html } = await ctx.renderPage({ enhanceApp });
 
     return { html };
   }
