@@ -9,6 +9,7 @@
     "configs",
     "link.js",
     "head.js",
+    "document.js",
     "router.js",
     "webpack.js"
   ],
