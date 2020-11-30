@@ -11,11 +11,17 @@ const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const glob = require("glob");
 const BuildManifestPlugin = require("./webpack/plugins/build-manifest-plugin");
 const crypto = require("crypto");
+const { nanoid } = require("nanoid");
 
 const projectDir = process.cwd();
 const flareact = flareactConfig(projectDir);
 const dev = process.env.NODE_ENV === "development";
 const isServer = false;
+
+// Note: This buildId does NOT match that which is running in webpack.worker.config.js.
+// This is merely used as a client cache-busting mechanism for items that absolutely change
+// between deploys, e.g. build manifests.
+const buildId = dev ? "dev" : nanoid();
 
 const pageManifest = glob.sync("./pages/**/*.js");
 
@@ -208,7 +214,12 @@ module.exports = (env, argv) => {
       path: path.resolve(projectDir, "out/_flareact/static"),
       chunkFilename: `${dev ? "[name]" : "[name].[contenthash]"}.js`,
     },
-    plugins: [new MiniCssExtractPlugin(), new BuildManifestPlugin()],
+    plugins: [
+      new MiniCssExtractPlugin({
+        filename: "[name].[chunkhash].css",
+      }),
+      new BuildManifestPlugin({ buildId }),
+    ],
     devServer: {
       index: "",
       contentBase: path.resolve(projectDir, "out"),

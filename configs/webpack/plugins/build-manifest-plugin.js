@@ -1,11 +1,15 @@
 const { RawSource } = require("webpack-sources");
 
 module.exports = class BuildManifestPlugin {
+  constructor({ buildId }) {
+    this.buildId = buildId;
+  }
+
   createAssets(compilation, assets) {
     const namedChunks = compilation.namedChunks;
 
     const assetMap = {
-      helpers: ["_buildManifest.js"],
+      helpers: [`${this.buildId}/_buildManifest.js`],
       pages: {},
     };
 
@@ -35,7 +39,7 @@ module.exports = class BuildManifestPlugin {
       JSON.stringify(assetMap, null, 2)
     );
 
-    assets["_buildManifest.js"] = new RawSource(
+    assets[`${this.buildId}/_buildManifest.js`] = new RawSource(
       `self.__BUILD_MANIFEST = ${generateClientManifest(
         assetMap
       )};self.__BUILD_MANIFEST_CB && self.__BUILD_MANIFEST_CB();`
