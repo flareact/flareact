@@ -214,7 +214,12 @@ module.exports = (env, argv) => {
       path: path.resolve(projectDir, "out/_flareact/static"),
       chunkFilename: `${dev ? "[name]" : "[name].[contenthash]"}.js`,
     },
-    plugins: [new MiniCssExtractPlugin(), new BuildManifestPlugin({ buildId })],
+    plugins: [
+      new MiniCssExtractPlugin({
+        filename: "[name].[chunkhash].css",
+      }),
+      new BuildManifestPlugin({ buildId }),
+    ],
     devServer: {
       index: "",
       contentBase: path.resolve(projectDir, "out"),
