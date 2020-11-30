@@ -25,6 +25,9 @@ module.exports = function ({ dev, isServer }) {
     context: process.cwd(),
     plugins: [new MiniCssExtractPlugin()],
     stats: "errors-warnings",
+    watchOptions: {
+      ignored: ['**/.git/**', '**/node_modules/**', '**/out/**']
+    },
     module: {
       rules: [
         {
