@@ -1,0 +1,70 @@
+[
+  {
+    "url": "/docs/getting-started",
+    "title": "Getting Started"
+  },
+  {
+    "url": "/docs/pages",
+    "title": "Pages"
+  },
+  {
+    "url": "/docs/data-fetching",
+    "title": "Data Fetching"
+  },
+  {
+    "url": "/docs/dynamic-routes",
+    "title": "Dynamic Routes"
+  },
+  {
+    "url": "/docs/api-routes",
+    "title": "API Routes"
+  },
+  {
+    "url": "/docs/built-in-css-support",
+    "title": "Built-in CSS Support"
+  },
+  {
+    "url": "/docs/static-file-serving",
+    "title": "Static File Serving"
+  },
+  {
+    "url": "/docs/fast-refresh",
+    "title": "Fast Refresh"
+  },
+  {
+    "url": "/docs/deployment",
+    "title": "Deployment"
+  },
+  {
+    "url": "/docs/typescript",
+    "title": "TypeScript"
+  },
+  {
+    "url": "/docs/custom-app-page",
+    "title": "Custom App Page"
+  },
+  {
+    "url": "/docs/custom-postcss-config",
+    "title": "Custom PostCSS Config"
+  },
+  {
+    "url": "/docs/custom-webpack-config",
+    "title": "Custom Webpack Config"
+  },
+  {
+    "url": "/docs/comparison-to-nextjs",
+    "title": "Comparison to Next.js"
+  },
+  {
+    "url": "/docs/flareact-link",
+    "title": "flareact/link"
+  },
+  {
+    "url": "/docs/flareact-head",
+    "title": "flareact/head"
+  },
+  {
+    "url": "/docs/flareact-router",
+    "title": "flareact/router"
+  }
+]
