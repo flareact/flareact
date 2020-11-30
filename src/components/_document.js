@@ -43,7 +43,9 @@ export function Html(props) {
 }
 
 export function Head() {
-  const { helmet, currentPage, buildManifest } = useContext(DocumentContext);
+  const { helmet, currentPage, buildManifest, styles } = useContext(
+    DocumentContext
+  );
 
   let links = new Set();
 
@@ -68,6 +70,7 @@ export function Head() {
       {[...links].map((link) => (
         <link key={link} href={`/_flareact/static/${link}`} rel="stylesheet" />
       ))}
+      {styles || null}
     </head>
   );
 }
