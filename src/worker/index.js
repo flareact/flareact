@@ -6,6 +6,7 @@ import { getPage, getPageProps, PageNotFoundError } from "./pages";
 import AppProvider from "../components/AppProvider";
 import { Helmet } from "react-helmet";
 import { generateEnv } from "./env";
+import { handleDataRequest } from "./data";
 
 const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
@@ -25,6 +26,10 @@ export async function handleRequest(event, context, fallback) {
   const env = generateEnv();
 
   try {
+    if (pathname.startsWith("/_flareact/data/kv")) {
+      return await handleDataRequest({ pathname, event, env });
+    }
+
     if (pathname.startsWith("/_flareact/props")) {
       const pagePath = pathname.replace(/\/_flareact\/props|\.json/g, "");
 

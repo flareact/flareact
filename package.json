@@ -51,6 +51,7 @@
     "react-helmet": "^6.1.0",
     "react-refresh": "^0.8.3",
     "style-loader": "^1.2.1",
+    "swr": "^0.3.9",
     "terser-webpack-plugin": "^4.0.0",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
