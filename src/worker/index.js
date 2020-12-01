@@ -5,6 +5,7 @@ import { RouterProvider, normalizePathname } from "../router";
 import { getPage, getPageProps, PageNotFoundError } from "./pages";
 import AppProvider from "../components/AppProvider";
 import { Helmet } from "react-helmet";
+import { generateEnv } from "./env";
 
 const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
@@ -21,6 +22,8 @@ export async function handleRequest(event, context, fallback) {
     return await fallback(event);
   }
 
+  const env = generateEnv();
+
   try {
     if (pathname.startsWith("/_flareact/props")) {
       const pagePath = pathname.replace(/\/_flareact\/props|\.json/g, "");
@@ -30,6 +33,7 @@ export async function handleRequest(event, context, fallback) {
         context,
         pagePath,
         query,
+        env,
         (_, props) => {
           return new Response(
             JSON.stringify({
@@ -50,7 +54,7 @@ export async function handleRequest(event, context, fallback) {
 
     if (pageIsApi(normalizedPathname)) {
       const page = getPage(normalizedPathname, context);
-      const response = await page.default(event);
+      const response = await page.default(event, env);
 
       if (response instanceof Object && !(response instanceof Response)) {
         return new Response(JSON.stringify(response), {
@@ -72,6 +76,7 @@ export async function handleRequest(event, context, fallback) {
       context,
       normalizedPathname,
       query,
+      env,
       (page, props) => {
         const Component = page.default;
         const App = getPage("/_app", context).default;
@@ -133,6 +138,7 @@ async function handleCachedPageRequest(
   context,
   normalizedPathname,
   query,
+  env,
   generateResponse
 ) {
   const cache = caches.default;
@@ -142,7 +148,7 @@ async function handleCachedPageRequest(
   if (!dev && cachedResponse) return cachedResponse;
 
   const page = getPage(normalizedPathname, context);
-  const props = await getPageProps(page, query);
+  const props = await getPageProps(page, query, env);
 
   let response = generateResponse(page, props);
 

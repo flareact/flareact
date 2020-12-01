@@ -12,3 +12,9 @@ module.exports.flareactConfig = function (dir) {
 
   return fileExistsInDir(dir, file) ? require(path.join(dir, file)) : {};
 };
+
+module.exports.wranglerConfig = function (dir) {
+  const file = "wrangler.toml";
+
+  return fs.readFileSync(path.join(dir, file));
+};

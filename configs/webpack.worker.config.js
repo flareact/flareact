@@ -6,14 +6,17 @@ const { flareactConfig } = require("./utils");
 const defaultLoaders = require("./loaders");
 const { nanoid } = require("nanoid");
 const fs = require("fs");
+const TOML = require("@iarna/toml");
 
 const dev = !!process.env.WORKER_DEV;
 const isServer = true;
 const projectDir = process.cwd();
 const flareact = flareactConfig(projectDir);
+const wranglerToml = fs.readFileSync(path.join(projectDir, "wrangler.toml"));
 
 const outPath = path.resolve(projectDir, "out");
 
+const wranglerConfig = TOML.parse(wranglerToml);
 const buildManifest = dev
   ? {}
   : fs.readFileSync(
@@ -40,6 +43,15 @@ module.exports = function (env, argv) {
   let inlineVars = {
     "process.env.BUILD_ID": JSON.stringify(nanoid()),
   };
+
+  const namespaces = wranglerConfig.kv_namespaces || [];
+  const defaultKVNamespace = namespaces.find((namespace) =>
+    namespace.binding.startsWith("_flareact_default")
+  );
+
+  if (defaultKVNamespace) {
+    inlineVars["DEFAULT_KV_NAMESPACE"] = defaultKVNamespace.binding;
+  }
 
   if (dev) {
     inlineVars.DEV = dev;
