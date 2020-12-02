@@ -14,10 +14,10 @@ export function resolvePagePath(pagePath, keys) {
         parts.push(match[1]);
       }
 
-      test = test.replace(DYNAMIC_PAGE, () => "([\\w_-]+)");
+      test = test.replace(DYNAMIC_PAGE, () => "(\\[(\\w+)\\])");
     }
 
-    test = test.replace("/", "\\/").replace(/^\./, "").replace(/\.js$/, "");
+    test = test.replace(/\//g, "\\/").replace(/^\./, "").replace(/\.js$/, "");
 
     return {
       page,
