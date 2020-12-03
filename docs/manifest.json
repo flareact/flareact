@@ -44,6 +44,10 @@
     "title": "Custom App Page"
   },
   {
+    "url": "/docs/custom-document-page",
+    "title": "Custom Document Page"
+  },
+  {
     "url": "/docs/custom-postcss-config",
     "title": "Custom PostCSS Config"
   },

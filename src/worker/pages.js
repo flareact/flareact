@@ -1,4 +1,5 @@
 import App from "../components/_app";
+import Document from "../components/_document";
 
 export const DYNAMIC_PAGE = new RegExp("\\[(\\w+)\\]", "g");
 
@@ -73,6 +74,10 @@ export function getPage(pagePath, context) {
   } catch (e) {
     if (pagePath === "/_app") {
       return { default: App };
+    }
+
+    if (pagePath === "/_document") {
+      return { default: Document };
     }
 
     throw new PageNotFoundError();
