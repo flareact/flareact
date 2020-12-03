@@ -53,7 +53,6 @@
     "react-refresh": "^0.8.3",
     "style-loader": "^1.2.1",
     "styled-jsx": "^3.3.2",
-    "styled-jsx-plugin-postcss": "^4.0.0",
     "terser-webpack-plugin": "^4.0.0",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",

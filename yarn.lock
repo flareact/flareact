@@ -8805,7 +8805,7 @@ postcss-lab-function@^2.0.1:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
 
-postcss-load-config@^2.0.0, postcss-load-config@^2.1.2:
+postcss-load-config@^2.0.0:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/postcss-load-config/-/postcss-load-config-2.1.2.tgz#c5ea504f2c4aef33c7359a34de3573772ad7502a"
   integrity sha512-/rDeGV6vMUo3mwJZmeHfEDvwnTKKqQ0S7OHUi/kJvvtx3aWtyWG2/0ZWnzCt2keEclwN6Tf0DST2v9kITdOKYw==
@@ -10877,13 +10877,6 @@ style-loader@^1.2.1:
   dependencies:
     loader-utils "^2.0.0"
     schema-utils "^2.7.0"
-
-styled-jsx-plugin-postcss@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/styled-jsx-plugin-postcss/-/styled-jsx-plugin-postcss-4.0.0.tgz#32a32995dee70ad8a52a529f2a2b6b1384dc4471"
-  integrity sha512-hP6GMjdI4/nJCtpPZVk0EsGhzWwZMqFPOklm//7U2IVNd56mG2xEBzKMvl87QUnu99SU1iOQWOj72q9hPPehSQ==
-  dependencies:
-    postcss-load-config "^2.1.2"
 
 styled-jsx@^3.3.2:
   version "3.3.2"
