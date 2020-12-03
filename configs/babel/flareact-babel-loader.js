@@ -11,7 +11,11 @@ module.exports = require("babel-loader").custom((babel) => {
       const filename = this.resourcePath;
       const isPageFile = filename.includes("pages");
 
-      let plugins = ["react-require", "@babel/plugin-transform-runtime"];
+      let plugins = [
+        "react-require",
+        "@babel/plugin-transform-runtime",
+        ["styled-jsx/babel", { plugins: ["styled-jsx-plugin-postcss"] }],
+      ];
 
       if (!isServer) {
         if (dev) {

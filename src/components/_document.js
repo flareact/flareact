@@ -1,5 +1,6 @@
 import React, { Component, createContext, useContext } from "react";
 import { htmlEscapeJsonString } from "../utils";
+import flush from "styled-jsx/server";
 
 const dev = typeof DEV !== "undefined" && !!DEV;
 
@@ -11,7 +12,9 @@ export default class Document extends Component {
 
     const { html } = await ctx.renderPage({ enhanceApp });
 
-    return { html };
+    const styles = [...flush()];
+
+    return { html, styles };
   }
 
   static renderDocument(DocumentComponent, props) {
