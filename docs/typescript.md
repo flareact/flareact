@@ -1,11 +1,11 @@
 # TypeScript Support
 
-Flareact supports TypeScript out of the box (**currently in `alpha`**).
+Flareact supports TypeScript out of the box.
 
 To get started, add `typescript` to your project:
 
 ```bash
-yarn add flareact@alpha typescript
+yarn add typescript
 yarn add -D @types/react
 ```
 

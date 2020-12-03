@@ -18,11 +18,11 @@ export function resolvePagePath(pagePath, keys) {
       test = test.replace(DYNAMIC_PAGE, () => "([\\w_-]+)");
     }
 
-    test = test.replace("/", "\\/").replace(/^\./, "").replace(/\.js$/, "");
+    test = test.replace("/", "\\/").replace(/^\./, "").replace(/\.(js|jsx|ts|tsx)$/, "");
 
     return {
       page,
-      pagePath: page.replace(/^\./, "").replace(/\.js$/, ""),
+      pagePath: page.replace(/^\./, "").replace(/\.(js|jsx|ts|tsx)$/, ""),
       parts,
       test: new RegExp("^" + test + "$", isDynamic ? "g" : ""),
     };
