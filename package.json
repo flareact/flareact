@@ -9,6 +9,7 @@
     "configs",
     "link.js",
     "head.js",
+    "document.js",
     "router.js",
     "webpack.js"
   ],
@@ -62,6 +63,7 @@
     "@babel/plugin-proposal-optional-chaining": "^7.11.0",
     "@testing-library/react": "^11.1.0",
     "babel-jest": "^26.2.2",
+    "eslint": "^7.14.0",
     "jest": "^26.2.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
