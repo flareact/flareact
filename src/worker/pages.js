@@ -7,8 +7,10 @@ export function resolvePagePath(pagePath, keys) {
     let test = page;
     let parts = [];
 
-    const isDynamic = DYNAMIC_PAGE.test(page);
-
+    
+    // treat /_app as a special case; as the "layout" it should never match a dynamic page
+    const isDynamic = pagePath != "/_app" && DYNAMIC_PAGE.test(page);
+    
     if (isDynamic) {
       for (const match of page.matchAll(/\[(\w+)\]/g)) {
         parts.push(match[1]);
