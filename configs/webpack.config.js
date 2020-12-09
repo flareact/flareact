@@ -9,8 +9,8 @@ module.exports = function ({ dev, isServer }) {
   const postCssLoader = {
     loader: "postcss-loader",
     options: {
-      config: {
-        path: fileExistsInDir(process.cwd(), "postcss.config.js")
+      postcssOptions: {
+        config: fileExistsInDir(process.cwd(), "postcss.config.js")
           ? process.cwd()
           : path.resolve(__dirname),
       },
@@ -87,7 +87,7 @@ module.exports = function ({ dev, isServer }) {
       ],
     },
     resolve: {
-      extensions: ['.js', '.json', '.jsx', '.ts', '.tsx']
-    }
+      extensions: [".js", ".json", ".jsx", ".ts", ".tsx"],
+    },
   };
 };
