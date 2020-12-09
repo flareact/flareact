@@ -1,22 +1,25 @@
 # Built-In CSS Support
 
-Flareact currently supports **standard CSS imports**:
+Flareact currently supports several styling methods:
+
+## Standard CSS imports
+
+You can import a standard CSS file into any component in your `pages` folder:
 
 ```js
 import '../styles.css';
 
-export default MyComponent() {
+export default MyPage() {
   //
 }
 ```
 
 Your compiled stylesheet will be injected into your document. When deploying, your styles will be minimized automatically.
 
-A few warning about CSS support in Flareact:
+A few warnings about CSS support in Flareact:
 
 - No support yet for Sass/Less/etc
 - No support for scoped CSS Modules
-- In production, Flareact will always attempt to load a `main.css` stylesheet, even if you don't have styles defined. _lol, sorry._
 
 ## Global Styles
 
@@ -37,3 +40,11 @@ export default function App({ Component, pageProps }) {
 Flareact processes all styles through [PostCSS](https://postcss.org/).
 
 [Learn more about customizing your PostCSS config](/docs/custom-postcss-config).
+
+## Examples
+
+Since you can define a custom [`pages/_document.js`](/docs/custom-document-page), Flareact supports popular CSS-in-JS libraries like [styled-components](https://styled-components.com/).
+
+Here are a list of CSS-in-JS examples you might find handy:
+
+- [with-styled-components](https://github.com/flareact/flareact/tree/canary/examples/with-styled-components)
