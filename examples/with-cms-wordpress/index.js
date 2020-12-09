@@ -12,7 +12,7 @@ const DEBUG = false;
 addEventListener("fetch", (event) => {
   try {
     event.respondWith(
-      handleEvent(event, require.context("./pages/", true, /\.js$/), DEBUG)
+      handleEvent(event, require.context("./pages/", true, /\.(js|jsx|ts|tsx)$/), DEBUG)
     );
   } catch (e) {
     if (DEBUG) {

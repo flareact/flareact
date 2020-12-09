@@ -1,55 +1,59 @@
-import React from "react";
+import React, { Component, createContext, useContext } from "react";
 import { htmlEscapeJsonString } from "../utils";
 
 const dev = typeof DEV !== "undefined" && !!DEV;
 
-export default function Document({
-  initialData,
-  helmet,
-  page,
-  context,
-  buildManifest,
-}) {
-  const htmlAttrs = helmet.htmlAttributes.toComponent();
-  const bodyAttrs = helmet.bodyAttributes.toComponent();
-  let currentPage = page.page.replace(/^\./, "").replace(/\.(js|css)$/, "");
+const DocumentContext = createContext();
 
-  // Flatten dynamic `index.js` pages
-  if (currentPage !== "/index" && currentPage.endsWith("/index")) {
-    currentPage = currentPage.replace(/\/index$/, "");
+export default class Document extends Component {
+  static async getEdgeProps(ctx) {
+    const enhanceApp = (App) => (props) => <App {...props} />;
+
+    const { html } = await ctx.renderPage({ enhanceApp });
+
+    return { html };
   }
 
-  // TODO: Drop all these props into a context and consume them in individual components
-  // so this page can be extended.
+  static renderDocument(DocumentComponent, props) {
+    return (
+      <DocumentContext.Provider value={props}>
+        <DocumentComponent {...props} />
+      </DocumentContext.Provider>
+    );
+  }
 
-  return (
-    <html lang="en" {...htmlAttrs}>
-      <FlareactHead
-        helmet={helmet}
-        buildManifest={buildManifest}
-        page={currentPage}
-      />
-      <body {...bodyAttrs}>
-        <div id="__flareact" />
-        <FlareactScripts
-          initialData={initialData}
-          page={currentPage}
-          context={context}
-          buildManifest={buildManifest}
-        />
-      </body>
-    </html>
-  );
+  render() {
+    return (
+      <Html>
+        <Head />
+        <body>
+          <Main />
+          <FlareactScript />
+        </body>
+      </Html>
+    );
+  }
 }
 
-export function FlareactHead({ helmet, page, buildManifest }) {
+export function Html(props) {
+  const { helmet } = useContext(DocumentContext);
+  const { htmlAttributes } = helmet.htmlAttributes.toComponent();
+
+  return <html {...htmlAttributes} {...props} />;
+}
+
+export function Head() {
+  const { helmet, currentPage, buildManifest, styles } = useContext(
+    DocumentContext
+  );
+
   let links = new Set();
 
   if (!dev) {
     buildManifest.pages["/_app"]
       .filter((link) => link.endsWith(".css"))
       .forEach((link) => links.add(link));
-    buildManifest.pages[page]
+    buildManifest.pages[currentPage]
       .filter((link) => link.endsWith(".css"))
       .forEach((link) => links.add(link));
   }
@@ -64,13 +68,23 @@ export function FlareactHead({ helmet, page, buildManifest }) {
       {helmet.script.toComponent()}
 
       {[...links].map((link) => (
-        <link href={`/_flareact/static/${link}`} rel="stylesheet" />
+        <link key={link} href={`/_flareact/static/${link}`} rel="stylesheet" />
       ))}
+      {styles || null}
     </head>
   );
 }
 
-export function FlareactScripts({ initialData, page, buildManifest }) {
+export function Main() {
+  const { html } = useContext(DocumentContext);
+  return <div id="__flareact" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+export function FlareactScript() {
+  const { buildManifest, page, currentPage, props } = useContext(
+    DocumentContext
+  );
+
   let prefix = dev ? "http://localhost:8080/" : "/";
   prefix += dev ? "" : "_flareact/static/";
 
@@ -81,17 +95,19 @@ export function FlareactScripts({ initialData, page, buildManifest }) {
       "webpack.js",
       "main.js",
       `pages/_app.js`,
-      `pages${page}.js`,
+      `pages${currentPage}.js`,
     ].forEach((script) => scripts.add(script));
   } else {
     buildManifest.helpers.forEach((script) => scripts.add(script));
     buildManifest.pages["/_app"]
       .filter((script) => script.endsWith(".js"))
       .forEach((script) => scripts.add(script));
-    buildManifest.pages[page]
+    buildManifest.pages[currentPage]
       .filter((script) => script.endsWith(".js"))
       .forEach((script) => scripts.add(script));
   }
+
+  const initialData = { page, props };
 
   return (
     <>
