@@ -88,3 +88,16 @@ it("matches multiple dynamic tsx pages", () => {
     slug: "now-supported",
   });
 });
+
+it("does not mistake _app for a dynamic page", () => {
+  const path = resolvePagePath("/_app", ["./[slug].js", "./_app.js"]);
+
+  expect(path).toBeTruthy();
+  expect(path.page).toBe("./_app.js");
+});
+
+it("returns when _app is missing", () => {
+  const path = resolvePagePath("/_app", ["./[slug].js"]);
+
+  expect(path).toBe(null);
+});

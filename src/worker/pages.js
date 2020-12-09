@@ -3,6 +3,10 @@ import Document from "../components/_document";
 
 export const DYNAMIC_PAGE = new RegExp("\\[(\\w+)\\]", "g");
 
+function isSpecialPage(pagePath) {
+  return /\/_(document|app)$/.test(pagePath);
+}
+
 export function resolvePagePath(pagePath, keys) {
   const pagesMap = keys.map((page) => {
     let test = page;
@@ -29,12 +33,27 @@ export function resolvePagePath(pagePath, keys) {
   });
 
   /**
-   * Sort pages to include those with `index` in the name first, because
-   * we need those to get matched more greedily than their dynamic counterparts.
+   * First, try to find an exact match.
    */
-  pagesMap.sort((a) => (a.page.includes("index") ? -1 : 1));
+  let page = pagesMap.find((p) => pagePath === p.pagePath);
 
-  let page = pagesMap.find((p) => p.test.test(pagePath));
+  /**
+   * If there's no exact match and the user is requesting a special page,
+   * we need to return null as to not accidentally match a dynamic page below.
+   */
+  if (!page && isSpecialPage(pagePath)) {
+    return null;
+  }
+
+  if (!page) {
+    /**
+     * Sort pages to include those with `index` in the name first, because
+     * we need those to get matched more greedily than their dynamic counterparts.
+     */
+    pagesMap.sort((a) => (a.page.includes("index") ? -1 : 1));
+
+    page = pagesMap.find((p) => p.test.test(pagePath));
+  }
 
   /**
    * If an exact match couldn't be found, try giving it another shot with /index at
