@@ -68,7 +68,7 @@ export default class PageLoader {
             if (url.endsWith(".js")) {
               this.loadScript(url);
             } else {
-              this.loadPrefetch(url, "fetch");
+              this.loadStylesheet(url);
             }
           });
         });
@@ -135,6 +135,22 @@ export default class PageLoader {
       const link = document.createElement("link");
       link.as = as;
       link.rel = relPrefetch;
+      link.onload = resolve;
+      link.onerror = reject;
+      link.href = path;
+
+      document.head.appendChild(link);
+    });
+  }
+
+  loadStylesheet(path) {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`link[rel="stylesheet"][href^="${path}"]`)) {
+        return resolve();
+      }
+
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
       link.onload = resolve;
       link.onerror = reject;
       link.href = path;
