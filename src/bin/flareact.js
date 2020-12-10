@@ -16,6 +16,7 @@ dotenv.config();
 const yargs = require("yargs");
 
 const argv = yargs
+  .command("kv", "Create a default KV namespace for KV hooks")
   .command("dev", "Starts a Flareact development server")
   .command("publish", "Builds Flareact for production and deploys it", {
     env: {
@@ -106,6 +107,28 @@ if (argv._.includes("build")) {
           "webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode production",
         name: "publish",
         env: { NODE_ENV: "production" },
+      },
+    ],
+    {
+      prefix: "name",
+      killOthers: ["failure"],
+      restartTries: 0,
+    }
+  ).then(
+    () => {},
+    (error) => {
+      console.error(error);
+    }
+  );
+}
+
+if (argv._.includes("kv")) {
+  concurrently(
+    [
+      {
+        command:
+          "wrangler kv:namespace create default",
+        name: "kv",
       },
     ],
     {
