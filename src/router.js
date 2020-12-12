@@ -130,17 +130,14 @@ export function RouterProvider({
   function scrollToHash(asPath) {
     const [, hash] = asPath.split("#");
 
-    console.log(hash);
-
     // If no hash set, scroll to top of page
-    if (hash === "") {
+    if (!hash) {
       window.scrollTo(0, 0);
+      return;
     }
 
     const idEl = document.getElementById(hash);
-    console.log(idEl);
     if (idEl) {
-      console.log("scrolling to", idEl);
       idEl.scrollIntoView();
       return;
     }
