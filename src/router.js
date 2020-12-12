@@ -133,6 +133,7 @@ export function RouterProvider({
     // If no hash set, scroll to top of page
     if (!hash) {
       window.scrollTo(0, 0);
+      return;
     }
 
     const idEl = document.getElementById(hash);
