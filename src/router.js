@@ -61,6 +61,7 @@ export function RouterProvider({
       }
 
       setComponent(pageCache[normalizedAsPath]);
+      setTimeout(() => scrollToHash(asPath), 0);
     }
 
     if (initialPath === route.asPath) {
@@ -125,6 +126,30 @@ export function RouterProvider({
       window.removeEventListener("popstate", handlePopState);
     };
   }, [setRoute]);
+
+  function scrollToHash(asPath) {
+    const [, hash] = asPath.split("#");
+
+    console.log(hash);
+
+    // If no hash set, scroll to top of page
+    if (hash === "") {
+      window.scrollTo(0, 0);
+    }
+
+    const idEl = document.getElementById(hash);
+    console.log(idEl);
+    if (idEl) {
+      console.log("scrolling to", idEl);
+      idEl.scrollIntoView();
+      return;
+    }
+
+    const nameEl = document.getElementsByName(hash)[0];
+    if (nameEl) {
+      nameEl.scrollIntoView();
+    }
+  }
 
   const router = {
     component,
