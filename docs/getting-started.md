@@ -86,7 +86,7 @@ export default function Index() {
 
 To preview your Flareact site locally, run `yarn dev` in your terminal. Behind the scenes, Wrangler creates a tunnel from your local site to Cloudflare's edge — bringing your development and production environments closer together.
 
-By default, your site will be available at [http://127.0.0.1:8787/](http://127.0.0.1:8787/).
+By default, your site will be available at [http://localhost:8080/](http://localhost:8080/).
 
 **Note**: Be sure to fill in your `account_id` in `wrangler.toml`. You can also add it to a local `.env` file in your project:
 
