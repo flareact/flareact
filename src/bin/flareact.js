@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 const concurrently = require("concurrently");
 const dotenv = require("dotenv");
+const {createDefaultKvBinding} = require('../../configs/wrangler.kv.config');
+
 dotenv.config();
 
 ["react", "react-dom"].forEach((dependency) => {
@@ -47,7 +49,7 @@ if (argv._.includes("dev")) {
       },
       {
         command:
-          "webpack-dev-server --config node_modules/flareact/configs/webpack.client.config.js --mode development",
+          "./node_modules/flareact/node_modules/.bin/webpack-dev-server --config node_modules/flareact/configs/webpack.client.config.js --mode development",
         name: "client",
         env: { NODE_ENV: "development" },
       },
@@ -123,23 +125,5 @@ if (argv._.includes("build")) {
 }
 
 if (argv._.includes("kv")) {
-  concurrently(
-    [
-      {
-        command:
-          "wrangler kv:namespace create default",
-        name: "kv",
-      },
-    ],
-    {
-      prefix: "name",
-      killOthers: ["failure"],
-      restartTries: 0,
-    }
-  ).then(
-    () => {},
-    (error) => {
-      console.error(error);
-    }
-  );
+  createDefaultKvBinding()
 }
