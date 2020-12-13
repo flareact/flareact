@@ -111,9 +111,11 @@ export function RouterProvider({
           asPath: state.asPath,
         };
       } else {
+        const { pathname, search, hash } = window.location;
+
         newRoute = {
-          href: window.location.pathname || "/",
-          asPath: window.location.pathname || "/",
+          href: pathname || "/",
+          asPath: pathname + search + hash || "/",
         };
       }
 
