@@ -106,7 +106,7 @@ async function handleCachedPageRequest(
   if (!dev && cachedResponse) return cachedResponse;
 
   const page = getPage(normalizedPathname, context);
-  const props = await getPageProps(page, query);
+  const props = await getPageProps(page, query, event);
 
   let response = await generateResponse(page, props);
 
