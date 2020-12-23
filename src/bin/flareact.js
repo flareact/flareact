@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 const fs = require("fs");
-const path = require("path");
 const concurrently = require("concurrently");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -17,12 +16,11 @@ dotenv.config();
 
 const yargs = require("yargs");
 
-const rootPath = "";
+let rootPath = "";
 const webpackConfigPath =
   "node_modules/flareact/configs/webpack.client.config.js";
 
-let isWebpackConfigFound = () =>
-  fs.existsSync(path.resolve(__dirname, rootPath, webpackConfigPath));
+let isWebpackConfigFound = () => fs.existsSync(rootPath + webpackConfigPath);
 
 while (!isWebpackConfigFound()) {
   rootPath += "../";
