@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+const fs = require("fs");
+const path = require("path");
 const concurrently = require("concurrently");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -14,6 +16,17 @@ dotenv.config();
 });
 
 const yargs = require("yargs");
+
+const rootPath = "";
+const webpackConfigPath =
+  "node_modules/flareact/configs/webpack.client.config.js";
+
+let isWebpackConfigFound = () =>
+  fs.existsSync(path.resolve(__dirname, rootPath, webpackConfigPath));
+
+while (!isWebpackConfigFound()) {
+  rootPath += "../";
+}
 
 const argv = yargs
   .command("dev", "Starts a Flareact development server")
@@ -45,8 +58,9 @@ if (argv._.includes("dev")) {
         env: { WORKER_DEV: true, IS_WORKER: true },
       },
       {
-        command:
-          "webpack-dev-server --config node_modules/flareact/configs/webpack.client.config.js --mode development",
+        command: `webpack-dev-server --config ${
+          rootPath + webpackConfigPath
+        } --mode development`,
         name: "client",
         env: { NODE_ENV: "development" },
       },
@@ -78,7 +92,9 @@ if (argv._.includes("publish")) {
   concurrently(
     [
       {
-        command: `webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode production && ${wranglerPublish}`,
+        command: `webpack --config ${
+          rootPath + webpackConfigPath
+        } --out ./out --mode production && ${wranglerPublish}`,
         name: "publish",
         env: { NODE_ENV: "production", IS_WORKER: true },
       },
@@ -102,8 +118,9 @@ if (argv._.includes("build")) {
   concurrently(
     [
       {
-        command:
-          "webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode production",
+        command: `webpack --config ${
+          rootPath + webpackConfigPath
+        } --out ./out --mode production`,
         name: "publish",
         env: { NODE_ENV: "production" },
       },
