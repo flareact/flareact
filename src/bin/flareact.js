@@ -37,7 +37,7 @@ if (isWebpackConfigFound()) {
   const secondLine =
     "⚠ Make sure all your dependencies are installed. If your project is a monorepo,";
   const thirdLine =
-    "⚠ make sure Flareact workspace is not nested more than 2 levels.";
+    "⚠ make sure Flareact workspace is not nested more than 3 levels.";
   console.error(firstLine + "\n" + secondLine + "\n" + thirdLine + "\n");
   process.exit(1);
 }
