@@ -35,7 +35,10 @@ const argv = yargs
   .alias("help", "h").argv;
 
 if (argv._.includes("dev")) {
-  console.log("🚀 Starting Flareact dev server on http://localhost:8080 ...\n");
+  console.log("⏰ Wait for Wrangler dev server to start on port 8787 first.");
+  console.log(
+    "🚀 Then, Flareact dev server will be on http://localhost:8080 ...\n"
+  );
 
   concurrently(
     [
