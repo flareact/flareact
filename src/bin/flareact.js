@@ -1,7 +1,9 @@
 #!/usr/bin/env node
+const cmd = require('node-cmd');
+const fs = require('fs');
 const concurrently = require("concurrently");
 const dotenv = require("dotenv");
-const {createDefaultKvBinding} = require('../../configs/wrangler.kv.config');
+const {writeDataToToml} = require('../../configs/wrangler.kv.config');
 
 dotenv.config();
 
@@ -125,5 +127,39 @@ if (argv._.includes("build")) {
 }
 
 if (argv._.includes("kv")) {
-  createDefaultKvBinding()
+  cmd.run(
+    "wrangler kv:namespace create _flareact_default",
+    function(err, _, stderr){
+      if (err) {
+        throw new Error(err)
+      }
+      if (stderr) {
+        throw new Error(stderr)
+      }
+      cmd.run(
+        "wrangler kv:namespace create _flareact_default --preview",
+        function(err, _, stderr){
+          if (err) {
+            throw new Error(err)
+          }
+          if (stderr) {
+            throw new Error(stderr)
+          }
+          cmd.run(
+            'wrangler kv:namespace list',
+            function(err, data, stderr){
+              if (err) {
+                throw new Error(err)
+              }
+              if (stderr) {
+                throw new Error(stderr)
+              }
+              writeDataToToml(data)
+            }
+          )
+        }
+      )
+    }
+  )  
+
 }

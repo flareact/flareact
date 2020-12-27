@@ -23,7 +23,7 @@ const parseNamespaceList = (list, projectName) => {
   return (binding);
 }
 
-const writeDataToToml = (data) => {
+module.exports.writeDataToToml = (data) => {
   const wranglerToml = fs.readFileSync(path.join(projectDir, "wrangler.toml"));
   const wranglerConf = TOML.parse(wranglerToml);
   const {name} = wranglerConf;
@@ -40,40 +40,3 @@ const writeDataToToml = (data) => {
     }
   })
 }
-
-module.exports.createDefaultKvBinding = () => {
-  cmd.run(
-    "wrangler kv:namespace create _flareact_default",
-    function(err, _, stderr){
-      if (err) {
-        throw new Error(err)
-      }
-      if (stderr) {
-        throw new Error(stderr)
-      }
-      cmd.run(
-        "wrangler kv:namespace create _flareact_default --preview",
-        function(err, _, stderr){
-          if (err) {
-            throw new Error(err)
-          }
-          if (stderr) {
-            throw new Error(stderr)
-          }
-          cmd.run(
-            'wrangler kv:namespace list',
-            function(err, data, stderr){
-              if (err) {
-                throw new Error(err)
-              }
-              if (stderr) {
-                throw new Error(stderr)
-              }
-              writeDataToToml(data)
-            }
-          )
-        }
-      )
-    }
-  )  
-};
