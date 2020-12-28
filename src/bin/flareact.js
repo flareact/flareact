@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const fs = require("fs");
 const concurrently = require("concurrently");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -14,6 +15,32 @@ dotenv.config();
 });
 
 const yargs = require("yargs");
+
+let rootPath = "";
+let webpackConfigPath =
+  "node_modules/flareact/configs/webpack.client.config.js";
+
+let isWebpackConfigFound = () => fs.existsSync(rootPath + webpackConfigPath);
+
+for (let i = 0; i < 3; i++) {
+  if (isWebpackConfigFound()) {
+    break;
+  }
+  rootPath += "../";
+}
+
+if (isWebpackConfigFound()) {
+  webpackConfigPath = rootPath + webpackConfigPath;
+} else {
+  const firstLine =
+    "⚠ Cannot find node_modules/flareact/configs/webpack.client.config.js.";
+  const secondLine =
+    "⚠ Make sure all your dependencies are installed. If your project is a monorepo,";
+  const thirdLine =
+    "⚠ make sure Flareact workspace is not nested more than 3 levels.";
+  console.error(firstLine + "\n" + secondLine + "\n" + thirdLine + "\n");
+  process.exit(1);
+}
 
 const argv = yargs
   .command("dev", "Starts a Flareact development server")
@@ -45,8 +72,7 @@ if (argv._.includes("dev")) {
         env: { WORKER_DEV: true, IS_WORKER: true },
       },
       {
-        command:
-          "webpack-dev-server --config node_modules/flareact/configs/webpack.client.config.js --mode development",
+        command: `webpack-dev-server --config ${webpackConfigPath} --mode development`,
         name: "client",
         env: { NODE_ENV: "development" },
       },
@@ -78,7 +104,7 @@ if (argv._.includes("publish")) {
   concurrently(
     [
       {
-        command: `webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode production && ${wranglerPublish}`,
+        command: `webpack --config ${webpackConfigPath} --out ./out --mode production && ${wranglerPublish}`,
         name: "publish",
         env: { NODE_ENV: "production", IS_WORKER: true },
       },
@@ -102,8 +128,7 @@ if (argv._.includes("build")) {
   concurrently(
     [
       {
-        command:
-          "webpack --config node_modules/flareact/configs/webpack.client.config.js --out ./out --mode production",
+        command: `webpack --config ${webpackConfigPath} --out ./out --mode production`,
         name: "publish",
         env: { NODE_ENV: "production" },
       },
