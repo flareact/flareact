@@ -1,6 +1,8 @@
 import { normalizePathname } from "../router";
 import { getPage, getPageProps, PageNotFoundError } from "./pages";
 import { render } from "./render";
+import { generateEnv } from "./env";
+import { handleDataRequest } from "./data";
 
 const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
@@ -21,7 +23,7 @@ export async function handleRequest(event, context, fallback) {
 
   try {
     if (pathname.startsWith("/_flareact/data/kv")) {
-      return await handleDataRequest({ pathname, event, env });
+      return await handleDataRequest({ pathname, event, env, context });
     }
 
     if (pathname.startsWith("/_flareact/props")) {

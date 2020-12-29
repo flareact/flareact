@@ -8,32 +8,35 @@ function isSpecialPage(pagePath) {
 }
 
 export function resolvePagePath(pagePath, keys) {
-  const pagesMap = keys.map((page) => {
-    let test = page;
-    let parts = [];
+  const pagesMap = keys
+    .filter((page) => !page.startsWith("./data"))
+    .map((page) => page.replace("./pages", "."))
+    .map((page) => {
+      let test = page;
+      let parts = [];
 
-    const isDynamic = DYNAMIC_PAGE.test(page);
+      const isDynamic = DYNAMIC_PAGE.test(page);
 
-    if (isDynamic) {
-      for (const match of page.matchAll(/\[(\w+)\]/g)) {
-        parts.push(match[1]);
+      if (isDynamic) {
+        for (const match of page.matchAll(/\[(\w+)\]/g)) {
+          parts.push(match[1]);
+        }
+
+        test = test.replace(DYNAMIC_PAGE, () => "([\\w_-]+)");
       }
 
-      test = test.replace(DYNAMIC_PAGE, () => "([\\w_-]+)");
-    }
+      test = test
+        .replace("/", "\\/")
+        .replace(/^\./, "")
+        .replace(/\.(js|jsx|ts|tsx)$/, "");
 
-    test = test
-      .replace("/", "\\/")
-      .replace(/^\./, "")
-      .replace(/\.(js|jsx|ts|tsx)$/, "");
-
-    return {
-      page,
-      pagePath: page.replace(/^\./, "").replace(/\.(js|jsx|ts|tsx)$/, ""),
-      parts,
-      test: new RegExp("^" + test + "$", isDynamic ? "g" : ""),
-    };
-  });
+      return {
+        page,
+        pagePath: page.replace(/^\./, "").replace(/\.(js|jsx|ts|tsx)$/, ""),
+        parts,
+        test: new RegExp("^" + test + "$", isDynamic ? "g" : ""),
+      };
+    });
 
   /**
    * First, try to find an exact match.
@@ -87,7 +90,7 @@ export function resolvePagePath(pagePath, keys) {
 export function getPage(pagePath, context) {
   try {
     const resolvedPage = resolvePagePath(pagePath, context.keys());
-    const page = context(resolvedPage.page);
+    const page = context(resolvedPage.page.replace("./", "./pages/"));
 
     return {
       ...resolvedPage,

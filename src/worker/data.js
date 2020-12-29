@@ -1,10 +1,11 @@
 import { getKVStore } from "../data";
+import { authorizeRead, authorizeReadClient } from "./policies";
 
 /**
  * Incoming pathname looks like:
  * /_flareact/data/kv/read
  */
-export async function handleDataRequest({ event, env }) {
+export async function handleDataRequest({ event, env, context }) {
   const url = new URL(event.request.url);
   const endpoint = url.pathname.replace("/_flareact/data/", "");
   const params = url.searchParams;
@@ -16,31 +17,33 @@ export async function handleDataRequest({ event, env }) {
     const store = getKVStore(env);
 
     if (method === "read") {
-      if (params.has("key")) {
-        const data = await store.get(params.get("key"));
+      const checks = await Promise.all([
+        authorizeRead(context, event.request),
+        authorizeReadClient(context, event.request),
+      ]);
 
-        // TODO: Infer type
-        const response = {
-          value: data,
-        };
+      if (!checks.every(Boolean)) {
+        const response = { error: "Unauthorized." };
 
-        return new Response(JSON.stringify(response), {
-          headers: { "content-type": "application/json" },
-        });
+        return formatResponse(response);
       }
 
-      const data = await store.list();
+      const data = await store.get(params.get("key"));
 
       // TODO: Infer type
       const response = {
-        value: data.keys,
+        value: data,
       };
 
-      return new Response(JSON.stringify(response), {
-        headers: { "content-type": "application/json" },
-      });
+      return formatResponse(response);
     }
   }
 
   throw new Error(`Data endpoint ${endpoint} not yet supported`);
+}
+
+function formatResponse(data) {
+  return new Response(JSON.stringify(data), {
+    headers: { "content-type": "application/json" },
+  });
 }

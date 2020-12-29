@@ -7,8 +7,9 @@ export function getKVStore(env) {
 export function useData(key) {
   const fetcher = (url) => fetch(url).then((r) => r.json());
 
-  let options = {};
-  if (key) options.key = key;
+  let options = {
+    key,
+  };
 
   const params = new URLSearchParams(options);
 
