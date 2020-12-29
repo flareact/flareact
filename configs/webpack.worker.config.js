@@ -28,7 +28,7 @@ module.exports = function (env, argv) {
   let config = {
     ...baseConfig({ dev, isServer }),
     target: "webworker",
-    entry: path.resolve(projectDir, "./index.js"),
+    entry: path.resolve(projectDir, "./index"),
   };
 
   config.plugins.push(

@@ -61,6 +61,7 @@ export function RouterProvider({
       }
 
       setComponent(pageCache[normalizedAsPath]);
+      setTimeout(() => scrollToHash(asPath), 0);
     }
 
     if (initialPath === route.asPath) {
@@ -110,9 +111,11 @@ export function RouterProvider({
           asPath: state.asPath,
         };
       } else {
+        const { pathname, search, hash } = window.location;
+
         newRoute = {
-          href: window.location.pathname || "/",
-          asPath: window.location.pathname || "/",
+          href: pathname || "/",
+          asPath: pathname + search + hash || "/",
         };
       }
 
@@ -125,6 +128,27 @@ export function RouterProvider({
       window.removeEventListener("popstate", handlePopState);
     };
   }, [setRoute]);
+
+  function scrollToHash(asPath) {
+    const [, hash] = asPath.split("#");
+
+    // If no hash set, scroll to top of page
+    if (!hash) {
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    const idEl = document.getElementById(hash);
+    if (idEl) {
+      idEl.scrollIntoView();
+      return;
+    }
+
+    const nameEl = document.getElementsByName(hash)[0];
+    if (nameEl) {
+      nameEl.scrollIntoView();
+    }
+  }
 
   const router = {
     component,

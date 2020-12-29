@@ -1,12 +1,6 @@
-import React from "react";
-import ReactDOMServer from "react-dom/server";
-import Document from "../components/_document";
-import { RouterProvider, normalizePathname } from "../router";
+import { normalizePathname } from "../router";
 import { getPage, getPageProps, PageNotFoundError } from "./pages";
-import AppProvider from "../components/AppProvider";
-import { Helmet } from "react-helmet";
-import { generateEnv } from "./env";
-import { handleDataRequest } from "./data";
+import { render } from "./render";
 
 const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
@@ -82,46 +76,14 @@ export async function handleRequest(event, context, fallback) {
       normalizedPathname,
       query,
       env,
-      (page, props) => {
-        const Component = page.default;
-        const App = getPage("/_app", context).default;
-
-        const content = ReactDOMServer.renderToString(
-          <RouterProvider
-            initialUrl={event.request.url}
-            initialPagePath={page.pagePath}
-          >
-            <AppProvider
-              Component={Component}
-              App={App}
-              pageProps={props}
-              context={context}
-            />
-          </RouterProvider>
-        );
-
-        const pageProps = {
-          props,
+      async (page, props) => {
+        const html = await render({
           page,
-        };
-
-        const helmet = Helmet.renderStatic();
-        let html = ReactDOMServer.renderToString(
-          <Document
-            initialData={pageProps}
-            helmet={helmet}
-            page={page}
-            context={context}
-            buildManifest={buildManifest}
-          />
-        );
-
-        html = html.replace(
-          `<div id="__flareact"></div>`,
-          `<div id="__flareact">${content}</div>`
-        );
-
-        html = "<!DOCTYPE html>" + html;
+          props,
+          context,
+          event,
+          buildManifest,
+        });
 
         return new Response(html, {
           status: 200,
@@ -153,9 +115,9 @@ async function handleCachedPageRequest(
   if (!dev && cachedResponse) return cachedResponse;
 
   const page = getPage(normalizedPathname, context);
-  const props = await getPageProps(page, query, env);
+  const props = await getPageProps(page, query, event, env);
 
-  let response = generateResponse(page, props);
+  let response = await generateResponse(page, props);
 
   // Cache by default
   let shouldCache = true;

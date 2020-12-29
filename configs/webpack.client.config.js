@@ -23,7 +23,7 @@ const isServer = false;
 // between deploys, e.g. build manifests.
 const buildId = dev ? "dev" : nanoid();
 
-const pageManifest = glob.sync("./pages/**/*.js");
+const pageManifest = glob.sync("./pages/**/*.+(js|jsx|ts|tsx)");
 
 let entry = {
   main: "flareact/src/client/index.js",
@@ -32,7 +32,7 @@ let entry = {
 pageManifest.forEach((page) => {
   if (/pages\/api\//.test(page)) return;
 
-  let pageName = page.match(/\/(.+)\.js$/)[1];
+  let pageName = page.match(/\/(.+)\.(js|jsx|ts|tsx)$/)[1];
 
   // Flatten any dynamic `index` pages
   if (pageName !== "pages/index" && pageName.endsWith("/index")) {

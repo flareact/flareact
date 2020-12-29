@@ -11,14 +11,12 @@ That means it supports nice API patterns like:
 - File-based routing
 - Dynamic page paths
 - Data fetching for page props using `getEdgeProps`
-- Universal application rendering (server and client)
+- API routes
+- Universal application rendering (worker and client)
 
 However, it's brand new! So it's also a bunch of these things:
 
 - **It probably does not work on Windows**
-- An early prototype
 - Missing years worth of optimizations the Next.js team has implemented
-- Probably has a heavy bundle
-- Styles? Sort of borked right now
 
 [Check out the docs!](https://flareact.com)
