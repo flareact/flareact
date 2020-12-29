@@ -1,6 +1,10 @@
 #!/usr/bin/env node
+const cmd = require('node-cmd');
+const fs = require('fs');
 const concurrently = require("concurrently");
 const dotenv = require("dotenv");
+const {writeDataToToml} = require('../../configs/wrangler.kv.config');
+
 dotenv.config();
 
 ["react", "react-dom"].forEach((dependency) => {
@@ -16,6 +20,7 @@ dotenv.config();
 const yargs = require("yargs");
 
 const argv = yargs
+  .command("kv", "Create a default KV namespace for KV hooks")
   .command("dev", "Starts a Flareact development server")
   .command("publish", "Builds Flareact for production and deploys it", {
     env: {
@@ -46,7 +51,7 @@ if (argv._.includes("dev")) {
       },
       {
         command:
-          "webpack-dev-server --config node_modules/flareact/configs/webpack.client.config.js --mode development",
+          "./node_modules/flareact/node_modules/.bin/webpack-dev-server --config node_modules/flareact/configs/webpack.client.config.js --mode development",
         name: "client",
         env: { NODE_ENV: "development" },
       },
@@ -119,4 +124,42 @@ if (argv._.includes("build")) {
       console.error(error);
     }
   );
+}
+
+if (argv._.includes("kv")) {
+  cmd.run(
+    "wrangler kv:namespace create _flareact_default",
+    function(err, _, stderr){
+      if (err) {
+        throw new Error(err)
+      }
+      if (stderr) {
+        throw new Error(stderr)
+      }
+      cmd.run(
+        "wrangler kv:namespace create _flareact_default --preview",
+        function(err, _, stderr){
+          if (err) {
+            throw new Error(err)
+          }
+          if (stderr) {
+            throw new Error(stderr)
+          }
+          cmd.run(
+            'wrangler kv:namespace list',
+            function(err, data, stderr){
+              if (err) {
+                throw new Error(err)
+              }
+              if (stderr) {
+                throw new Error(stderr)
+              }
+              writeDataToToml(data)
+            }
+          )
+        }
+      )
+    }
+  )  
+
 }

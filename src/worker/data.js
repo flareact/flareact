@@ -39,8 +39,17 @@ export async function handleDataRequest({ event, env }) {
       return new Response(JSON.stringify(response), {
         headers: { "content-type": "application/json" },
       });
+    } else if (method === "write") {
+      if (params.has("key") && params.has("value")) {
+        try {
+          await store.put(params.get("key"), params.get("value"));
+          return new Response (null, {status: 200});
+        } catch (err) {
+          console.log(err);
+          return new Response (null, {status: 500});
+        }
+      }
     }
   }
-
   throw new Error(`Data endpoint ${endpoint} not yet supported`);
 }
