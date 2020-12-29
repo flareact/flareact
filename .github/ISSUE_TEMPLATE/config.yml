@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feature Request
+    url: https://github.com/flareact/flareact/discussions/new?category_id=32004473
+    about: 'Suggest any ideas you have using our discussion forums.'
+  - name: Help
+    url: https://github.com/flareact/flareact/discussions/new?category_id=32004472
+    about: 'If you have a question or need help, ask a question on the discussion forums.'
+  - name: Thabnks
+    url: https://github.com/flareact/flareact/discussions/new?category_id=32256550
+    about: "Have something nice to say about Flareact? We'd love to hear it!"
