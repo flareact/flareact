@@ -19,8 +19,8 @@
     "semantic-release": "semantic-release"
   },
   "peerDependencies": {
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react": "^16.13.1 || ^17",
+    "react-dom": "^16.13.1 || ^17"
   },
   "bin": {
     "flareact": "./src/bin/flareact.js"
