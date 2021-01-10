@@ -59,6 +59,7 @@
     "sass-loader": "^10.1.0",
     "style-loader": "^1.2.1",
     "terser-webpack-plugin": "^4.0.0",
+    "urql": "^1.11.5",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0",

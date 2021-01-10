@@ -127,7 +127,7 @@ export async function getPageProps(page, query, event, graphql) {
   }
 
   if(graphql){
-    const graphqlData = exec_gql(page, query)
+    const graphqlData = await exec_gql(graphql, query);
     pageProps = {
       ...pageProps,
       ...graphqlData.props,

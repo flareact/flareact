@@ -169,5 +169,5 @@ export function useRouter() {
 }
 
 export function normalizePathname(pathname) {
-  return pathname === "/" ? "/index" : pathname;
+  return (pathname === "/" || /graphql$/.test(pathname)) ? "/index" : pathname;
 }

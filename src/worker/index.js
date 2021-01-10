@@ -64,7 +64,7 @@ export async function handleRequest(event, context, fallback) {
       return response;
     }
 
-    if(pageIsGraphql(normalizePathname)){
+    if (pageIsGraphql(normalizedPathname)) {
       const page = getGraphql(normalizedPathname, context);
       const response = await exec_gql(page, query);
 
@@ -123,10 +123,11 @@ async function handleCachedPageRequest(
   const cacheKey = getCacheKey(event.request);
   const cachedResponse = await cache.match(cacheKey);
 
-  if (!dev && cachedResponse) return cachedResponse;
+  if (!dev && cachedResponse) return cachedResponse;console.log()
+  if (!dev && cachedResponse) return cachedResponse;console.log(normalizedPathname)
 
   const page = getPage(normalizedPathname, context);
-  const graphql = getGraphql(normalizePathname, context);
+  const graphql = getGraphql(normalizedPathname, context);
   const props = await getPageProps(page, query, event, graphql ? graphql : null);
 
   let response = await generateResponse(page, props);

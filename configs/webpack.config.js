@@ -89,10 +89,15 @@ module.exports = function ({ dev, isServer }) {
           exclude: /node_modules/,
           loader: "graphql-tag/loader",
         },
+        {
+          test: /\.mjs$/,
+          include: /node_modules/,
+          type: "javascript/auto",
+        },
       ],
     },
     resolve: {
-      extensions: [".js", ".json", ".jsx", ".ts", ".tsx"],
+      extensions: [".js", ".json", ".jsx", ".ts", ".tsx", ".mjs"],
     },
   };
 };
