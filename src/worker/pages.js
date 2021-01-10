@@ -1,5 +1,6 @@
 import App from "../components/_app";
 import Document from "../components/_document";
+import { exec_gql } from "./graphql";
 
 export const DYNAMIC_PAGE = new RegExp("\\[(\\w+)\\]", "g");
 
@@ -103,12 +104,13 @@ export function getPage(pagePath, context) {
   }
 }
 
-export async function getPageProps(page, query, event) {
+export async function getPageProps(page, query, event, graphql) {
   let pageProps = {};
 
   const params = page.params || {};
 
-  const fetcher = page.getEdgeProps || page.getStaticProps;
+  const fetcher =
+    page.getEdgeProps || page.getStaticProps;
 
   const queryObject = {
     ...query,
@@ -121,6 +123,14 @@ export async function getPageProps(page, query, event) {
     pageProps = {
       ...props,
       revalidate,
+    };
+  }
+
+  if(graphql){
+    const graphqlData = exec_gql(page, query)
+    pageProps = {
+      ...pageProps,
+      ...graphqlData.props,
     };
   }
 

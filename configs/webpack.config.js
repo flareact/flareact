@@ -84,6 +84,11 @@ module.exports = function ({ dev, isServer }) {
                 sassLoader,
               ],
         },
+        {
+          test: /\.(graphql)$/,
+          exclude: /node_modules/,
+          loader: "graphql-tag/loader",
+        },
       ],
     },
     resolve: {

@@ -1,5 +1,6 @@
 import { normalizePathname } from "../router";
 import { getPage, getPageProps, PageNotFoundError } from "./pages";
+import {exec_gql, getGraphql} from './graphql';
 import { render } from "./render";
 
 const dev =
@@ -63,6 +64,25 @@ export async function handleRequest(event, context, fallback) {
       return response;
     }
 
+    if(pageIsGraphql(normalizePathname)){
+      const page = getGraphql(normalizedPathname, context);
+      const response = await exec_gql(page, query);
+
+      if (response instanceof Object && !(response instanceof Response)) {
+        return new Response(JSON.stringify(response), {
+          headers: {
+            "content-type": "application/json",
+          },
+        });
+      }
+
+      if (!(response instanceof Response)) {
+        return new Response(response);
+      }
+
+      return response;
+    }
+
     return await handleCachedPageRequest(
       event,
       context,
@@ -106,7 +126,8 @@ async function handleCachedPageRequest(
   if (!dev && cachedResponse) return cachedResponse;
 
   const page = getPage(normalizedPathname, context);
-  const props = await getPageProps(page, query, event);
+  const graphql = getGraphql(normalizePathname, context);
+  const props = await getPageProps(page, query, event, graphql ? graphql : null);
 
   let response = await generateResponse(page, props);
 
@@ -120,6 +141,10 @@ async function handleCachedPageRequest(
     } else {
       response.headers.append("Cache-Control", `max-age=${props.revalidate}`);
     }
+  }
+
+  if(graphql){
+    shouldCache = false;
   }
 
   if (shouldCache) {
@@ -136,4 +161,8 @@ function getCacheKey(request) {
 
 function pageIsApi(page) {
   return /^\/api\/.+/.test(page);
+}
+
+function pageIsGraphql(page) {
+  return /^\/graphql\/.+/.test(page);
 }
