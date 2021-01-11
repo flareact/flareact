@@ -5,6 +5,15 @@ export function resolvegraphqlPath(graphqlPath, keys) {
   const graphqlsMap = keys.map((graphql) => {
     let test = graphql;
 
+    const isDynamic = DYNAMIC_PAGE.test(page);
+
+    if (isDynamic) {
+      for (const match of page.matchAll(/\[(\w+)\]/g)) {
+        parts.push(match[1]);
+      }
+
+      test = test.replace(DYNAMIC_PAGE, () => "([\\w_-]+)");
+
     test = test
       .replace("/", "\\/")
       .replace(/^\./, "")
@@ -30,7 +39,7 @@ export function resolvegraphqlPath(graphqlPath, keys) {
 
   /**
    * If an exact match couldn't be found, try giving it another shot with /index at
-   * the end. This helps discover dynamic nested index pages.
+   * the end. This helps discover dynamic nested schema pages.
    */
   if (!graphql) {
     graphql = graphqlsMap.find((p) => p.test.test(graphqlPath + "/schema"));
@@ -54,11 +63,19 @@ export function getGraphql(graphqlPath, context) {
   return null;
 }
 
-export async function exec_gql(gqlNode, variables) {
+export async function executeGQL(gqlNode, variables) {
+  const stringifiedQuery = "";
+  
+  const cache = caches.default;
+  const cacheKey = getCacheKey(stringifiedQuery);
+  const cachedResponse = await cache.match(cacheKey);
+  if (cachedResponse) return cachedResponse;
+  
   var client = await createClient({
     url: GRAPHQL_API,
   });
-  const result = await client.query(gqlNode, variables).toPromise();
+  result = await client.query(gqlNode, variables).toPromise();
+  await cache.put(cacheKey, {props: result.data});
   return {props : result.data}
 }
 

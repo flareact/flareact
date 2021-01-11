@@ -123,8 +123,8 @@ async function handleCachedPageRequest(
   const cacheKey = getCacheKey(event.request);
   const cachedResponse = await cache.match(cacheKey);
 
-  if (!dev && cachedResponse) return cachedResponse;console.log()
-  if (!dev && cachedResponse) return cachedResponse;console.log(normalizedPathname)
+  if (!dev && cachedResponse) return cachedResponse;
+  if (!dev && cachedResponse) return cachedResponse;
 
   const page = getPage(normalizedPathname, context);
   const graphql = getGraphql(normalizedPathname, context);
