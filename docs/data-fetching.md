@@ -36,6 +36,8 @@ export default function Posts({ posts }) {
 `getEdgeProps` receives one argument object containing the following properties:
 
 - `params`: Any params corresponding to dynamic routes
+- `query`: Any query params e.g. `?foo=bar` sent to the page request, in addition to any `params` generated as part of dynamic routes
+- `event`: The `FetchEvent` inside the worker script, including the `request` object (for further parsing) and the `respondWith` method, useful for running tasks out-of-band
 
 You must return an object from `getEdgeProps`:
 

@@ -52,7 +52,7 @@ Next, create your component and import the CSS module as you would any other dep
 import styles from "./Alert.module.css";
 
 export default function Alert() {
-  return <p className={styles.paragraph}>Alert!</p>;
+  return <p className={styles.text}>Alert!</p>;
 }
 ```
 
