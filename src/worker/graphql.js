@@ -64,7 +64,7 @@ export function getGraphql(graphqlPath, context) {
 }
 
 export async function executeGQL(gqlNode, variables) {
-  const stringifiedQuery = "";
+  const stringifiedQuery = JSON.stringify(gqlNode.loc.source.body);
   
   const cache = caches.default;
   const cacheKey = getCacheKey(stringifiedQuery);
