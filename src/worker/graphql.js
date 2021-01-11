@@ -13,6 +13,7 @@ export function resolvegraphqlPath(graphqlPath, keys) {
       }
 
       test = test.replace(DYNAMIC_PAGE, () => "([\\w_-]+)");
+    }
 
     test = test
       .replace("/", "\\/")

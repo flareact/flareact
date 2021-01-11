@@ -1,6 +1,6 @@
 import { normalizePathname } from "../router";
 import { getPage, getPageProps, PageNotFoundError } from "./pages";
-import {exec_gql, getGraphql} from './graphql';
+import {executeGQL, getGraphql} from './graphql';
 import { render } from "./render";
 
 const dev =
@@ -66,7 +66,7 @@ export async function handleRequest(event, context, fallback) {
 
     if (pageIsGraphql(normalizedPathname)) {
       const page = getGraphql(normalizedPathname, context);
-      const response = await exec_gql(page, query);
+      const response = await executeGQL(page, query);
 
       if (response instanceof Object && !(response instanceof Response)) {
         return new Response(JSON.stringify(response), {

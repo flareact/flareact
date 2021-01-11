@@ -1,6 +1,6 @@
 import App from "../components/_app";
 import Document from "../components/_document";
-import { exec_gql } from "./graphql";
+import { executeGQL } from "./graphql";
 
 export const DYNAMIC_PAGE = new RegExp("\\[(\\w+)\\]", "g");
 
@@ -127,7 +127,7 @@ export async function getPageProps(page, query, event, graphql) {
   }
 
   if(graphql){
-    const graphqlData = await exec_gql(graphql, query);
+    const graphqlData = await executeGQL(graphql, query);
     pageProps = {
       ...pageProps,
       ...graphqlData.props,
