@@ -19,7 +19,7 @@ export function resolvePagePath(pagePath, keys) {
         parts.push(match[1]);
       }
 
-      test = test.replace(DYNAMIC_PAGE, () => "([\\w_-]+)");
+      test = test.replace(DYNAMIC_PAGE, () => "([^\/]+)");
     }
 
     test = test.replace("/", "\\/").replace(/^\./, "").replace(/\.(js|jsx|ts|tsx)$/, "");
