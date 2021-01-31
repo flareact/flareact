@@ -44,6 +44,12 @@ if (isWebpackConfigFound()) {
 
 const argv = yargs
   .command("dev", "Starts a Flareact development server")
+  .option('port', {
+    alias: 'p',
+    type: 'number',
+    description: `Start the development server on the specified port`,
+    default: 8080
+  })
   .command("publish", "Builds Flareact for production and deploys it", {
     env: {
       description: "The Cloudflare Workers environment to target",
@@ -62,7 +68,7 @@ const argv = yargs
   .alias("help", "h").argv;
 
 if (argv._.includes("dev")) {
-  console.log("🚀 Starting Flareact dev server on http://localhost:8080 ...\n");
+  console.log(`🚀 Starting Flareact dev server on http://localhost:${argv.port} ...\n`);
 
   concurrently(
     [
@@ -72,7 +78,7 @@ if (argv._.includes("dev")) {
         env: { WORKER_DEV: true, IS_WORKER: true },
       },
       {
-        command: `webpack-dev-server --config ${webpackConfigPath} --mode development`,
+        command: `webpack-dev-server --config ${webpackConfigPath} --mode development --port ${argv.port}`,
         name: "client",
         env: { NODE_ENV: "development" },
       },
