@@ -23,6 +23,18 @@ it("matches dynamic pages", () => {
   expect(path.params).toEqual({ slug: "hello" });
 });
 
+it("matches dynamic pages with unicode", () => {
+  const path = resolvePagePath("/posts/%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9", [
+    "./index.js",
+    "./apples.js",
+    "./posts/[slug].js",
+  ]);
+
+  expect(path).toBeTruthy();
+  expect(path.page).toBe("./posts/[slug].js");
+  expect(path.params).toEqual({ slug: "%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9" });
+});
+
 it("matches dynamic page indexes", () => {
   const path = resolvePagePath("/posts", [
     "./index.js",
@@ -71,6 +83,21 @@ it("matches multiple dynamic pages", () => {
   expect(path.params).toEqual({
     category: "travel",
     slug: "hello-world-it-me",
+  });
+});
+
+it("matches multiple dynamic pages with unicode", () => {
+  const path = resolvePagePath("/posts/%D7%A2%D7%91%D7%A8%D7%99%D7%AA/%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9", [
+    "./index.js",
+    "./apples.js",
+    "./posts/[category]/[slug].js",
+  ]);
+
+  expect(path).toBeTruthy();
+  expect(path.page).toBe("./posts/[category]/[slug].js");
+  expect(path.params).toEqual({
+    category: "%D7%A2%D7%91%D7%A8%D7%99%D7%AA",
+    slug: "%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9",
   });
 });
 
