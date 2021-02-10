@@ -85,8 +85,7 @@ export function FlareactScript() {
     DocumentContext
   );
 
-  let prefix = dev ? "http://localhost:8080/" : "/";
-  prefix += dev ? "" : "_flareact/static/";
+  let prefix = dev ? "/" : "/_flareact/static";
 
   let scripts = new Set();
 
