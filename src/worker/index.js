@@ -133,7 +133,7 @@ async function handleCachedPageRequest(
   if (props && typeof props.redirect !== "undefined") {
     const { redirect = {} } = props;
     const statusCode = redirect.statusCode || (redirect.permanent ? PERMANENT_REDIRECT_STATUS : TEMPORARY_REDIRECT_STATUS);
-    return Response.redirect(redirect.destination, statusCode);
+    response = Response.redirect(redirect.destination, statusCode);
   }
 
   return response;
