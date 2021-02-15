@@ -5,8 +5,7 @@ import {
   PERMANENT_REDIRECT_STATUS,
   TEMPORARY_REDIRECT_STATUS,
 } from "../constants";
-import { checkRedirectUrl } from "./redirects";
-import config from "../../configs/flarect.config";
+import { config } from "./flareact.config";
 
 const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
@@ -50,17 +49,19 @@ export async function handleRequest(event, context, fallback) {
 
     const normalizedPathname = normalizePathname(pathname);
 
-    if (config && typeof config?.redirect === "function") {
-      const reducedRedirect = await checkRedirectUrl({
-        event,
-        normalizedPathname,
-        config,
-      });
+    if (config && typeof config.redirects) {
+      const reducedRedirect = config.redirects.find(
+        (item) => item.source === normalizedPathname
+      );
       if (reducedRedirect) {
         const statusCode = reducedRedirect.permanent
           ? PERMANENT_REDIRECT_STATUS
           : TEMPORARY_REDIRECT_STATUS;
-        return Response.redirect(reducedRedirect.destination, statusCode);
+        // TODO: add a better way to find the origin or the protocol
+        return Response.redirect(
+          `https://${hostname}${reducedRedirect.destination}`,
+          statusCode
+        );
       }
     }
 

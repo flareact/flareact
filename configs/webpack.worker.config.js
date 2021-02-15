@@ -6,7 +6,8 @@ const { flareactConfig } = require("./utils");
 const defaultLoaders = require("./loaders");
 const { nanoid } = require("nanoid");
 const fs = require("fs");
-const { CONFIG_FILE } = require("../src/constants");
+
+const CONFIG_FILE = "flareact.config.js";
 
 const dev = !!process.env.WORKER_DEV;
 const isServer = true;
@@ -14,6 +15,21 @@ const projectDir = process.cwd();
 const flareact = flareactConfig(projectDir);
 
 const outPath = path.resolve(projectDir, "out");
+
+if (flareact.redirects) {
+  async function writeConfigFile() {
+    const redirects = await flareact.redirects();
+    fs.writeFileSync(
+      `${projectDir}/node_modules/flareact/src/worker/${CONFIG_FILE}`,
+      `export const config = { redirects: ${JSON.stringify(
+        redirects,
+        null,
+        4
+      )}}`
+    );
+  }
+  writeConfigFile();
+}
 
 const buildManifest = dev
   ? {}
@@ -58,19 +74,6 @@ module.exports = function (env, argv) {
       defaultLoaders: defaultLoaders({ dev, isServer }),
       webpack,
     });
-  }
-
-  if (flareact.redirects) {
-    config.plugins.push(
-      new CopyPlugin(
-        [
-          {
-            from: `${projectDir}/${CONFIG_FILE}`,
-            to: `./${CONFIG_FILE}`,
-          },
-        ],
-      ),
-    );
   }
 
   return config;

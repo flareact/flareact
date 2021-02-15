@@ -1,5 +1,3 @@
-module.exports = {
-    TEMPORARY_REDIRECT_STATUS: 307,
-    PERMANENT_REDIRECT_STATUS: 308,
-    CONFIG_FILE: 'flareact.config.js'
-};
+export const TEMPORARY_REDIRECT_STATUS = 307;
+export const PERMANENT_REDIRECT_STATUS = 308;
+export const CONFIG_FILE = 'flareact.config.js';
