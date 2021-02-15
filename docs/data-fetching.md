@@ -68,6 +68,35 @@ export async function getEdgeProps() {
 }
 ```
 
+## Optional Redirect in the edge
+
+Flareact can redirect to internal and external resources.
+
+- It should match the shape of `{ destination: string, permanent: boolean }`
+- You can use the statusCode property instead of the permanent property, but not both.
+
+```js
+export async function getEdgeProps() {
+  const data = await someExpensiveDataRequest();
+
+  if(!data) {
+    return {
+      // pass this object to use redirect
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      data,
+    },
+  };
+}
+```
+
 There might be times when you **never want the page to be cached**. That's possible, too — just return `{ revalidate: 0 }` from `getEdgeProps` to tell Flareact to fetch a fresh page every single request.
 
 To recap:
