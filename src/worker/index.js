@@ -1,7 +1,15 @@
 import { normalizePathname } from "../router";
 import { getPage, getPageProps, PageNotFoundError } from "./pages";
 import { render } from "./render";
-import { PERMANENT_REDIRECT_STATUS, TEMPORARY_REDIRECT_STATUS } from '../constants'; 
+import {
+  PERMANENT_REDIRECT_STATUS,
+  TEMPORARY_REDIRECT_STATUS,
+} from "../constants";
+import { checkRedirectUrl } from "./redirects";
+import { flareactConfig } from "../../configs/utils";
+
+const projectDir = process.cwd();
+const config = flareactConfig(projectDir);
 
 const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
@@ -44,6 +52,20 @@ export async function handleRequest(event, context, fallback) {
     }
 
     const normalizedPathname = normalizePathname(pathname);
+
+    if (config && typeof config?.redirect === "function") {
+      const reducedRedirect = await checkRedirectUrl({
+        event,
+        normalizedPathname,
+        config,
+      });
+      if (reducedRedirect) {
+        const statusCode = reducedRedirect.permanent
+          ? PERMANENT_REDIRECT_STATUS
+          : TEMPORARY_REDIRECT_STATUS;
+        return Response.redirect(reducedRedirect.destination, statusCode);
+      }
+    }
 
     if (pageIsApi(normalizedPathname)) {
       const page = getPage(normalizedPathname, context);
@@ -109,12 +131,16 @@ async function handleCachedPageRequest(
   const page = getPage(normalizedPathname, context);
   const props = await getPageProps(page, query, event);
 
-  /* 
-    * Redirect value to allow redirecting in the edge. This is an optional value.
-  */
+  /*
+   * Redirect value to allow redirecting in the edge. This is an optional value.
+   */
   if (props && typeof props.redirect !== "undefined") {
     const { redirect = {} } = props;
-    const statusCode = redirect.statusCode || (redirect.permanent ? PERMANENT_REDIRECT_STATUS : TEMPORARY_REDIRECT_STATUS);
+    const statusCode =
+      redirect.statusCode ||
+      (redirect.permanent
+        ? PERMANENT_REDIRECT_STATUS
+        : TEMPORARY_REDIRECT_STATUS);
     return Response.redirect(redirect.destination, statusCode);
   }
 
