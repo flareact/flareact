@@ -6,10 +6,7 @@ import {
   TEMPORARY_REDIRECT_STATUS,
 } from "../constants";
 import { checkRedirectUrl } from "./redirects";
-import { flareactConfig } from "../../configs/utils";
-
-const projectDir = process.cwd();
-const config = flareactConfig(projectDir);
+import config from "../../configs/flarect.config";
 
 const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
