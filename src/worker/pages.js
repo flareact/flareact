@@ -116,11 +116,12 @@ export async function getPageProps(page, query, event) {
   };
 
   if (fetcher) {
-    const { props, revalidate } = await fetcher({ params, query: queryObject, event });
+    const { props, revalidate, redirect } = await fetcher({ params, query: queryObject, event });
 
     pageProps = {
       ...props,
       revalidate,
+      redirect
     };
   }
 
