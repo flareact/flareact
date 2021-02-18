@@ -120,7 +120,7 @@ export async function getPageProps(page, query, event) {
 
     pageProps = {
       ...props,
-      revalidate
+      revalidate,
     };
   }
 
