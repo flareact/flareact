@@ -1,7 +1,6 @@
 import { normalizePathname } from "../router";
 import { getPage, getPageProps, PageNotFoundError } from "./pages";
 import { render } from "./render";
-import { PERMANENT_REDIRECT_STATUS, TEMPORARY_REDIRECT_STATUS } from '../constants'; 
 
 const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
@@ -108,15 +107,6 @@ async function handleCachedPageRequest(
 
   const page = getPage(normalizedPathname, context);
   const props = await getPageProps(page, query, event);
-
-  /* 
-    * Redirect value to allow redirecting in the edge. This is an optional value.
-  */
-  if (props && typeof props.redirect !== "undefined") {
-    const { redirect = {} } = props;
-    const statusCode = redirect.statusCode || (redirect.permanent ? PERMANENT_REDIRECT_STATUS : TEMPORARY_REDIRECT_STATUS);
-    return Response.redirect(redirect.destination, statusCode);
-  }
 
   let response = await generateResponse(page, props);
 
