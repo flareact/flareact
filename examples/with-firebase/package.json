@@ -1,0 +1,19 @@
+{
+  "name": "with-firebase",
+  "version": "1.0.0",
+  "license": "MIT",
+  "description": "A template for kick starting a Flareact project with firebase",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "dev": "flareact dev",
+    "build": "flareact build",
+    "deploy": "flareact publish"
+  },
+  "dependencies": {
+    "firebase": "^8.2.8",
+    "flareact": "^1.0.0",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
+  }
+}
