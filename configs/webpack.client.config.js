@@ -219,17 +219,6 @@ module.exports = (env, argv) => {
         filename: "[name].[chunkhash].css",
       }),
       new BuildManifestPlugin({ buildId }),
-      new webpack.DefinePlugin({
-        ...Object.keys(process.env).reduce(
-          (prev, key ) => {
-            if (key.startsWith('FLAREACT_PUBLIC_')) {
-              prev[`process.env.${key}`] = JSON.stringify(process.env[key])
-            }
-            return prev
-          },
-          {}
-        ),
-      }),
     ],
     devServer: {
       index: "",
