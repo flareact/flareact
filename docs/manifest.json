@@ -52,6 +52,10 @@
     "title": "Custom PostCSS Config"
   },
   {
+    "url": "/docs/custom-404-error-page",
+    "title": "Custom 404 Not Found Error Page"
+  },
+  {
     "url": "/docs/custom-webpack-config",
     "title": "Custom Webpack Config"
   },
