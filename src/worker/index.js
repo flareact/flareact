@@ -5,7 +5,6 @@ import {
   PERMANENT_REDIRECT_STATUS,
   TEMPORARY_REDIRECT_STATUS,
 } from "../constants";
-import { config } from "./flareact.config";
 
 const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
@@ -48,22 +47,6 @@ export async function handleRequest(event, context, fallback) {
     }
 
     const normalizedPathname = normalizePathname(pathname);
-
-    if (config && typeof config.redirects) {
-      const reducedRedirect = config.redirects.find(
-        (item) => item.source === normalizedPathname
-      );
-      if (reducedRedirect) {
-        const statusCode = reducedRedirect.permanent
-          ? PERMANENT_REDIRECT_STATUS
-          : TEMPORARY_REDIRECT_STATUS;
-        // TODO: add a better way to find the origin or the protocol
-        return Response.redirect(
-          `https://${hostname}${reducedRedirect.destination}`,
-          statusCode
-        );
-      }
-    }
 
     if (pageIsApi(normalizedPathname)) {
       const page = getPage(normalizedPathname, context);

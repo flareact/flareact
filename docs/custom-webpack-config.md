@@ -46,28 +46,3 @@ module.exports = {
   },
 };
 ```
-
-## Redirects
-
-With redirect you can redirect an incoming request path to a different destination path.
-
-Example usage of `redirects`:
-
-```js
-module.exports = {
-  async redirects() {
-    return [
-      {
-        source: '/about',
-        destination: '/',
-        permanent: true,
-      },
-    ]
-  },
-};
-```
-It expects an array to be returned holding objects with source, destination, and permanent properties:
-
-- `source` is the incoming request path pattern.
-- `destination` is the path you want to route to.
-- `permanent` if the redirect is permanent or not.
