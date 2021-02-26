@@ -22,10 +22,14 @@ const buildManifest = dev
     );
 
 module.exports = function (env, argv) {
+  const customResolve = flareact.resolve ? flareact.resolve : {}
   let config = {
     ...baseConfig({ dev, isServer }),
     target: "webworker",
     entry: path.resolve(projectDir, "./index"),
+    resolve: {
+      ...customResolve
+    },
   };
 
   config.plugins.push(
