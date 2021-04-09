@@ -51,7 +51,18 @@ module.exports = function (env, argv) {
     inlineVars["process.env.BUILD_MANIFEST"] = buildManifest;
   }
 
-  config.plugins.push(new webpack.DefinePlugin(inlineVars));
+  config.plugins.push(new webpack.DefinePlugin({
+    ...Object.keys(process.env).reduce(
+      (prev, key ) => {
+        if (key.startsWith('FLAREACT_WORKER')) {
+          prev[`process.env.${key}`] = JSON.stringify(process.env[key])
+        }
+        return prev
+      },
+      {}
+    ),
+    ...inlineVars,
+  }),);
 
   if (flareact.webpack) {
     config = flareact.webpack(config, {
