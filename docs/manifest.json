@@ -40,6 +40,10 @@
     "title": "TypeScript"
   },
   {
+    "url": "/docs/react-native",
+    "title": "React Native (experimental)"
+  },
+  {
     "url": "/docs/custom-app-page",
     "title": "Custom App Page"
   },
