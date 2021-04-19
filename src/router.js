@@ -50,11 +50,14 @@ export function RouterProvider({
       const pagePath = normalizePathname(href);
       const normalizedAsPath = normalizePathname(asPath);
 
-      if (!pageCache[normalizedAsPath]) {
+      if (!pageCache[normalizedAsPath] || hasPagePropsExpired(pageCache[normalizedAsPath].expiry)) {
         const page = await pageLoader.loadPage(pagePath);
         const { pageProps } = await pageLoader.loadPageProps(normalizedAsPath);
+        const revalidateSeconds = getRevalidateValue(pageProps);
+        const expiry = generatePagePropsExpiry(revalidateSeconds);
 
         pageCache[normalizedAsPath] = {
+          expiry: expiry,
           Component: page,
           pageProps,
         };
@@ -70,6 +73,34 @@ export function RouterProvider({
 
     loadNewPage();
   }, [route, initialPath]);
+
+  function generatePagePropsExpiry(seconds) {
+    if (seconds === null) {
+      return null;
+    }
+  
+    return Date.now() + (seconds * 1000);
+  }
+
+  function hasPagePropsExpired(expiry) {
+    if (expiry === null) {
+      return false;
+    }
+
+    if (Date.now() < expiry) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function getRevalidateValue(pageProps) {
+    if (!pageProps.revalidate) {
+      return null;
+    }
+
+    return pageProps.revalidate;
+  }
 
   function push(href, as) {
     const asPath = as || href;
