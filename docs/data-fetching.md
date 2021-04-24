@@ -68,7 +68,7 @@ export async function getEdgeProps() {
 }
 ```
 
-There might be times when you **never want the page to be cached**. That's possible, too — just return `{ revalidate: 0 }` from `getEdgeProps` to tell Flareact to fetch a fresh page every single request.
+There might be times when you **never want the page to be cached**. That's possible, too — just return `{ revalidate: 0 }` from `getEdgeProps` to tell Flareact to fetch a fresh page every single request.
 
 To recap:
 
