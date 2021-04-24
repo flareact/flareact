@@ -240,8 +240,6 @@ module.exports = (env, argv) => {
 
   if (dev) {
     config.plugins.push(new ReactRefreshWebpackPlugin());
-
-    config.output.publicPath = "http://localhost:8080/";
   }
 
   if (flareact.webpack) {
