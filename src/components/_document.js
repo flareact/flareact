@@ -85,7 +85,7 @@ export function FlareactScript() {
     DocumentContext
   );
 
-  let prefix = dev ? "/" : "/_flareact/static";
+  let prefix = dev ? "/" : "/_flareact/static/";
 
   let scripts = new Set();
 
