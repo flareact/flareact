@@ -64,6 +64,13 @@ export function resolvePagePath(pagePath, keys) {
   }
 
   if (!page) return null;
+
+  /**
+   * If pagePath ends in /index trim it off (unless page is /index) to match router
+   * returned pagePath for the same page
+   */
+  page.pagePath = page.pagePath.replace(/(?=.)\/index$/, "");
+
   if (!page.parts.length) return page;
 
   let params = {};
