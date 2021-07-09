@@ -69,7 +69,7 @@ export function resolvePagePath(pagePath, keys) {
    * If pagePath ends in /index trim it off (unless page is /index) to match router
    * returned pagePath for the same page
    */
-  page.pagePath = page.pagePath.replace(/(?=.)\/index$/, "");
+  page.pagePath = page.pagePath.replace(/(?<!^)\/index$/, "");
 
   if (!page.parts.length) return page;
 
