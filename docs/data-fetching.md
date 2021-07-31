@@ -41,8 +41,9 @@ export default function Posts({ posts }) {
 
 You must return an object from `getEdgeProps`:
 
-- it should contain a `props` property containing the props to be passed to your component
+- It should contain a `props` property containing the props to be passed to your component
 - You can optionally pass a `revalidate` argument - see below.
+- You can optionally pass a `notFound` argument with a `true` / `false` boolean to return a 404 response - see below.
 
 ## Caching and Revalidation
 
@@ -79,6 +80,48 @@ To recap:
 | `1` (or greater)   | Cache that number of seconds, and then revalidate. |
 
 **Note**: In development, props are requested each page load, and no caching is performed.
+
+## 404 Response
+
+A 404 response can be returned if required for SEO purposes. For example if you could not find the requested data in KV or another data source.
+
+The current implementation only does this on hard page loads. Client-side routing between different pages using the `link` component still returns a 200. However the `notFound` parameter will be present in both cases for you to display an appropriate message to the user.
+
+```js
+export async function getEdgeProps() {
+  const posts = await getBlogPosts();
+
+  return {
+    props: {
+      posts,
+    },
+    // If notFound true is returned, display message to user
+    notFound: true,
+  };
+}
+
+export default function Posts({ posts, notFound }) {
+  return (
+    <>
+    { notFound === true &&
+      <div>
+        Sorry, we could not find your posts!
+      </div>
+    }
+    { notFound === false &&
+      <div>
+        <h1>Posts</h1>
+        <ul>
+          {posts.map((post) => {
+            return <li key={post.id}>...</li>;
+          })}
+        </ul>
+      </div>
+    }
+    </>
+  );
+}
+```
 
 ## Additional Notes
 
