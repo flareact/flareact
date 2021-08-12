@@ -95,7 +95,7 @@ export function RouterProvider({
   }
 
   function getRevalidateValue(pageProps) {
-    if (!pageProps.revalidate) {
+    if (pageProps.revalidate == null) {
       return null;
     }
 

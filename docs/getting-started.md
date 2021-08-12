@@ -53,6 +53,7 @@ Next, make sure you have the following files (check out the [template repo](http
 
 - `index.js`
 - `wrangler.toml`
+- `cargo-generate.toml`
 
 Open `package.json` file and add the following `scripts`:
 

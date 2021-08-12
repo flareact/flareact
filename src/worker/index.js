@@ -77,8 +77,14 @@ export async function handleRequest(event, context, fallback) {
           buildManifest,
         });
 
+        let statusCode = 200;
+
+        if (typeof props.notFound !== "undefined" && props.notFound === true) {
+            statusCode = 404;
+        }
+
         return new Response(html, {
-          status: 200,
+          status: statusCode,
           headers: { "content-type": "text/html" },
         });
       }
