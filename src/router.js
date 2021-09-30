@@ -45,7 +45,7 @@ export function RouterProvider({
   }, [protocol, host, route.asPath, params]);
 
   useEffect(() => {
-    // On initial page load, replace history state with format expected by router
+    // On initial page load, replace history state with format expected by router 
     window.history.replaceState(route, null, route.asPath);
   }, [])
 
