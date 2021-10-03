@@ -45,6 +45,11 @@ export function RouterProvider({
   }, [protocol, host, route.asPath, params]);
 
   useEffect(() => {
+    // On initial page load, replace history state with format expected by router 
+    window.history.replaceState(route, null, route.asPath);
+  }, [])
+
+  useEffect(() => {
     async function loadNewPage() {
       const { href, asPath } = route;
       const pagePath = normalizePathname(href);
