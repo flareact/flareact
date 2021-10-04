@@ -212,6 +212,7 @@ module.exports = (env, argv) => {
     },
     output: {
       path: path.resolve(projectDir, "out/_flareact/static"),
+      publicPath: "/_flareact/static/",
       chunkFilename: `${dev ? "[name]" : "[name].[contenthash]"}.js`,
     },
     plugins: [
