@@ -2,6 +2,7 @@ import App from "../components/_app";
 import Document from "../components/_document";
 
 export const DYNAMIC_PAGE = new RegExp("\\[(\\w+)\\]", "g");
+export const CATCH_ALL = new RegExp("(.*?)\/\\[\\.\\.\\.(\\w+)\\]");
 
 function isSpecialPage(pagePath) {
   return /\/_(document|app)$/.test(pagePath);
@@ -11,6 +12,7 @@ export function resolvePagePath(pagePath, keys) {
   const pagesMap = keys.map((page) => {
     let test = page;
     let parts = [];
+    let params ={};
 
     const isDynamic = DYNAMIC_PAGE.test(page);
 
@@ -22,10 +24,20 @@ export function resolvePagePath(pagePath, keys) {
       test = test.replace(DYNAMIC_PAGE, () => "([^\/]+)");
     }
 
+    const isCatchall = CATCH_ALL.test(page)
+
+    if (isCatchall) {
+      const pageParts = page.match(CATCH_ALL);
+      const paths = ('.' + pagePath).replace(pageParts[1] + '/', '').split('/');
+      params[pageParts[2]] = paths;
+      test = pageParts[1] + paths.map(() => '/([^/]+)').join('');
+    }
+
     test = test.replace("/", "\\/").replace(/^\./, "").replace(/\.(js|jsx|ts|tsx)$/, "");
 
     return {
       page,
+      params,
       pagePath: page.replace(/^\./, "").replace(/\.(js|jsx|ts|tsx)$/, ""),
       parts,
       test: new RegExp("^" + test + "$", isDynamic ? "g" : ""),
