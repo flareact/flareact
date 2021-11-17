@@ -28,7 +28,7 @@ Next, use wrangler to create a new Flareact project using the [template](https:/
 wrangler generate my-project https://github.com/flareact/flareact-template
 ```
 
-Finally, switch to your directory and yun `yarn` or `npm install`:
+Finally, switch to your directory and run `yarn` or `npm install`:
 
 ```bash
 cd my-project
