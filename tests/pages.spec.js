@@ -71,6 +71,32 @@ it("matches longer dynamic pages", () => {
   expect(path.params).toEqual({ slug: "hello-world-it-me" });
 });
 
+it("matches catch-all dynamic page", () => {
+  const path = resolvePagePath("/posts/hello-world/it/me", [
+    "./index.js",
+    "./apples.js",
+    "./posts/[...category].js",
+  ]);
+
+  expect(path).toBeTruthy();
+  expect(path.page).toBe("./posts/[...category].js");
+  expect(path.params).toEqual({
+    category: ["hello-world","it","me"],
+  });
+});
+
+it("matches catch-all dynamic page indexes", () => {
+  const path = resolvePagePath("/posts", [
+    "./index.js",
+    "./apples.js",
+    "./posts/[...category].js",
+    "./posts/index.js",
+  ]);
+
+  expect(path).toBeTruthy();
+  expect(path.page).toBe("./posts/index.js");
+});
+
 it("matches multiple dynamic pages", () => {
   const path = resolvePagePath("/posts/travel/hello-world-it-me", [
     "./index.js",
