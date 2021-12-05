@@ -53,7 +53,7 @@ The params passed to your `getEdgeProps` function will contain each dynamic path
 Dynamic routes can be extended to catch all paths by adding three dots `(...)` inside the brackets. For example:
 
 ```
-/pages/posts/[..slug].js
+/pages/posts/[...slug].js
 ```
 
 `/pages/post/[...slug].js` matches `/pages/post/a`, but also `/pages/post/a/b`, `/pages/post/a/b/c` and so on.
