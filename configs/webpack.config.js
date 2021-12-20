@@ -21,7 +21,7 @@ module.exports = function ({ dev, isServer }) {
     loader: MiniCssExtractPlugin.loader,
   };
 
-  const sassOptionFiber = false;
+  let sassOptionFiber = false;
 
   // Check if we can enable fibers or not. Its not supported in node versions 16 and up.
   if (parseInt(process.versions.node.split('.')[0]) < 16) {
