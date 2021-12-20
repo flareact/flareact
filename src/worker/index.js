@@ -83,9 +83,15 @@ export async function handleRequest(event, context, fallback) {
             statusCode = 404;
         }
 
+        let headers = { "content-type": "text/html" }
+
+        if (typeof props.customHeaders !== "undefined") {
+          headers = {...headers, ...props.customHeaders};
+        }
+
         return new Response(html, {
           status: statusCode,
-          headers: { "content-type": "text/html" },
+          headers: headers,
         });
       }
     );
