@@ -1,0 +1,29 @@
+{
+  "name": "flareact-project",
+  "version": "1.0.0",
+  "license": "MIT",
+  "description": "A template for kickstarting a Flareact project",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "dev": "flareact dev",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider flareact build",
+    "deploy": "flareact publish"
+  },
+  "dependencies": {
+    "@cloudflare/wrangler": "^1.19.7",
+    "@mui/icons-material": "^5.2.5",
+    "@mui/material": "^5.2.7",
+    "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest",
+    "@mui/styled-engine-sc": "^5.1.0",
+    "@mui/styles": "^5.2.3",
+    "flareact": "^1.2.1-canary.3",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0",
+    "styled-components": "^5.3.3",
+    "yarn": "^1.22.17"
+  },
+  "resolutions": {
+    "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest"
+  }
+}
