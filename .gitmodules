@@ -1,6 +1,0 @@
-[submodule "with-mui"]
-	path = with-mui
-	url = https://github.com/shaunm/flareact-mui
-[submodule "examples/with-mui"]
-	path = examples/with-mui
-	url = https://github.com/shaunm/flareact-mui
