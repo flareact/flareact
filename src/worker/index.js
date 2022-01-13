@@ -152,7 +152,7 @@ async function handleCachedPageRequest(
         ? PERMANENT_REDIRECT_STATUS
         : TEMPORARY_REDIRECT_STATUS);
       const headers = {
-        Location: reducedRedirect.destination
+        Location: redirect.destination
       };
       return new Response(null, { status: statusCode, headers: headers });
   }
