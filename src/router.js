@@ -55,10 +55,8 @@ export function RouterProvider({
         const { pageProps, redirected, url } = await pageLoader.loadPageProps(normalizedAsPath);
 
         if (redirected === true) {
-          const { hostname, pathname } = new URL(url);
-
-          if (hostname === window.location.hostname) {
-            router.push(pathname);
+          if (url[0] === "/") {
+            router.push(url);
           } else {
             window.location.href = url;
           }
