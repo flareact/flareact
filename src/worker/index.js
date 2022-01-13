@@ -58,10 +58,15 @@ export async function handleRequest(event, context, fallback) {
           ? PERMANENT_REDIRECT_STATUS
           : TEMPORARY_REDIRECT_STATUS;
         // TODO: add a better way to find the origin or the protocol
-        return Response.redirect(
-          `${url.origin}${reducedRedirect.destination}`,
-          statusCode
-        );
+        // return Response.redirect(
+        //   `${url.origin}${reducedRedirect.destination}`,
+        //   statusCode
+        // );
+        return new Response(null, {
+          statusCode: statusCode,
+          url: reducedRedirect.destination,
+          redirected: true
+        });
       }
     }
 
@@ -152,7 +157,10 @@ async function handleCachedPageRequest(
       (redirect.permanent
         ? PERMANENT_REDIRECT_STATUS
         : TEMPORARY_REDIRECT_STATUS);
-    return Response.redirect(`${url.origin}${redirect.destination}`, statusCode);
+      const headers = {
+        Location: reducedRedirect.destination
+      };
+      return new Response(null, { status: statusCode, headers: headers })
   }
 
   let response = await generateResponse(page, props);
