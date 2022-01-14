@@ -1,6 +1,11 @@
 import { normalizePathname } from "../router";
 import { getPage, getPageProps, PageNotFoundError } from "./pages";
 import { render } from "./render";
+import {
+  PERMANENT_REDIRECT_STATUS,
+  TEMPORARY_REDIRECT_STATUS,
+} from "../constants";
+import { config } from "./flareact.config";
 
 const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
@@ -43,6 +48,21 @@ export async function handleRequest(event, context, fallback) {
     }
 
     const normalizedPathname = normalizePathname(pathname);
+
+    if (config && typeof config.redirects) {
+      const reducedRedirect = config.redirects.find(
+        (item) => item.source === normalizedPathname
+      );
+      if (reducedRedirect) {
+        const statusCode = reducedRedirect.permanent
+          ? PERMANENT_REDIRECT_STATUS
+          : TEMPORARY_REDIRECT_STATUS;
+        const headers = {
+          Location: reducedRedirect.destination
+        };
+        return new Response(null, { status: statusCode, headers: headers });
+      }
+    }
 
     if (pageIsApi(normalizedPathname)) {
       const page = getPage(normalizedPathname, context);
@@ -111,6 +131,7 @@ async function handleCachedPageRequest(
   query,
   generateResponse
 ) {
+  const url = new URL(event.request.url);
   const cache = caches.default;
   const cacheKey = getCacheKey(event.request);
   const cachedResponse = await cache.match(cacheKey);
@@ -119,6 +140,22 @@ async function handleCachedPageRequest(
 
   const page = getPage(normalizedPathname, context);
   const props = await getPageProps(page, query, event);
+
+  /*
+   * Redirect value to allow redirecting in the edge. This is an optional value.
+   */
+  if (props && typeof props.redirect !== "undefined") {
+    const { redirect = {} } = props;
+    const statusCode =
+      redirect.statusCode ||
+      (redirect.permanent
+        ? PERMANENT_REDIRECT_STATUS
+        : TEMPORARY_REDIRECT_STATUS);
+      const headers = {
+        Location: redirect.destination
+      };
+      return new Response(null, { status: statusCode, headers: headers });
+  }
 
   let response = await generateResponse(page, props);
 
