@@ -29,6 +29,11 @@ if (flareact.redirects) {
     );
   }
   writeConfigFile();
+} else {
+  fs.writeFileSync(
+    `${projectDir}/node_modules/flareact/src/worker/${CONFIG_FILE}`,
+    `export const config = {}`
+  );
 }
 
 const buildManifest = dev
