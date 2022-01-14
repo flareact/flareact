@@ -45,12 +45,17 @@ export function RouterProvider({
   }, [protocol, host, route.asPath, params]);
 
   useEffect(() => {
+    // On initial page load, replace history state with format expected by router 
+    window.history.replaceState(route, null, route.asPath);
+  }, [])
+
+  useEffect(() => {
     async function loadNewPage() {
       const { href, asPath } = route;
       const pagePath = normalizePathname(href);
       const normalizedAsPath = normalizePathname(asPath);
 
-      if (!pageCache[normalizedAsPath]) {
+      if (!pageCache[normalizedAsPath] || hasPagePropsExpired(pageCache[normalizedAsPath].expiry)) {
         const page = await pageLoader.loadPage(pagePath);
         const { pageProps, redirected, url } = await pageLoader.loadPageProps(normalizedAsPath);
 
@@ -63,8 +68,12 @@ export function RouterProvider({
 
           return;
         }
+        
+        const revalidateSeconds = getRevalidateValue(pageProps);
+        const expiry = generatePagePropsExpiry(revalidateSeconds);
 
         pageCache[normalizedAsPath] = {
+          expiry: expiry,
           Component: page,
           pageProps,
         };
@@ -80,6 +89,34 @@ export function RouterProvider({
 
     loadNewPage();
   }, [route, initialPath]);
+
+  function generatePagePropsExpiry(seconds) {
+    if (seconds === null) {
+      return null;
+    }
+  
+    return Date.now() + (seconds * 1000);
+  }
+
+  function hasPagePropsExpired(expiry) {
+    if (expiry === null) {
+      return false;
+    }
+
+    if (Date.now() < expiry) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function getRevalidateValue(pageProps) {
+    if (pageProps.revalidate == null) {
+      return null;
+    }
+
+    return pageProps.revalidate;
+  }
 
   function push(href, as) {
     const asPath = as || href;
