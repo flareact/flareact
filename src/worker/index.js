@@ -1,5 +1,5 @@
 import { normalizePathname } from "../router";
-import { getPage, getPageProps, PageNotFoundError } from "./pages";
+import { getPage, getPageProps, PageNotFoundError, resolvePagePath } from "./pages";
 import { render } from "./render";
 import {
   PERMANENT_REDIRECT_STATUS,
@@ -23,9 +23,29 @@ export async function handleRequest(event, context, fallback) {
   }
 
   try {
-    if (pathname.startsWith("/_flareact/props")) {
-      const pagePath = pathname.replace(/\/_flareact\/props|\.json/g, "");
+    const pagePath = pathname.replace(/\/_flareact\/props|\.json/g, "");
 
+    const normalizedPathname = normalizePathname(pagePath);
+    const resolvedPage = resolvePagePath(normalizedPathname, context.keys());
+    const resolvedPagePath = resolvedPage ? resolvedPage.pagePath : null;
+    const slug = resolvedPage && resolvedPage.params ? resolvedPage.params.slug : null;
+
+    if (config && typeof config.redirects !== "undefined") {
+      const reducedRedirect = config.redirects.find(
+        (item) => item.source === normalizedPathname || item.source === resolvedPagePath
+      );
+      if (reducedRedirect) {
+        const statusCode = reducedRedirect.permanent
+          ? PERMANENT_REDIRECT_STATUS
+          : TEMPORARY_REDIRECT_STATUS;
+        const headers = {
+          Location: reducedRedirect.destination.replace(/\[slug\]/, slug)
+        };
+        return new Response(null, { status: statusCode, headers: headers });
+      }
+    }
+
+    if (pathname.startsWith("/_flareact/props")) {
       return await handleCachedPageRequest(
         event,
         context,
@@ -45,23 +65,6 @@ export async function handleRequest(event, context, fallback) {
           );
         }
       );
-    }
-
-    const normalizedPathname = normalizePathname(pathname);
-
-    if (config && typeof config.redirects) {
-      const reducedRedirect = config.redirects.find(
-        (item) => item.source === normalizedPathname
-      );
-      if (reducedRedirect) {
-        const statusCode = reducedRedirect.permanent
-          ? PERMANENT_REDIRECT_STATUS
-          : TEMPORARY_REDIRECT_STATUS;
-        const headers = {
-          Location: reducedRedirect.destination
-        };
-        return new Response(null, { status: statusCode, headers: headers });
-      }
     }
 
     if (pageIsApi(normalizedPathname)) {
@@ -141,6 +144,8 @@ async function handleCachedPageRequest(
   const page = getPage(normalizedPathname, context);
   const props = await getPageProps(page, query, event);
 
+  const slug = page.params ? page.params.slug : null;
+
   /*
    * Redirect value to allow redirecting in the edge. This is an optional value.
    */
@@ -152,7 +157,7 @@ async function handleCachedPageRequest(
         ? PERMANENT_REDIRECT_STATUS
         : TEMPORARY_REDIRECT_STATUS);
       const headers = {
-        Location: redirect.destination
+        Location: redirect.destination.replace(/\[slug\]/, slug)
       };
       return new Response(null, { status: statusCode, headers: headers });
   }
