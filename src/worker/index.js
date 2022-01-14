@@ -28,7 +28,6 @@ export async function handleRequest(event, context, fallback) {
     const normalizedPathname = normalizePathname(pagePath);
     const resolvedPage = resolvePagePath(normalizedPathname, context.keys());
     const resolvedPagePath = resolvedPage ? resolvedPage.pagePath : null;
-    const slug = resolvedPage && resolvedPage.params ? resolvedPage.params.slug : null;
 
     if (config && typeof config.redirects !== "undefined") {
       const reducedRedirect = config.redirects.find(
@@ -38,8 +37,18 @@ export async function handleRequest(event, context, fallback) {
         const statusCode = reducedRedirect.permanent
           ? PERMANENT_REDIRECT_STATUS
           : TEMPORARY_REDIRECT_STATUS;
+        let destination = reducedRedirect.destination;
+
+        if (resolvedPage && resolvedPage.params) {
+          for (const param in resolvedPage.params) {
+            const regex = new RegExp(`\\[${param}\\]`);
+
+            destination = destination.replace(regex, resolvedPage.params[param]);
+          }
+        }
+  
         const headers = {
-          Location: reducedRedirect.destination.replace(/\[slug\]/, slug)
+          Location: destination
         };
         return new Response(null, { status: statusCode, headers: headers });
       }
@@ -144,8 +153,6 @@ async function handleCachedPageRequest(
   const page = getPage(normalizedPathname, context);
   const props = await getPageProps(page, query, event);
 
-  const slug = page.params ? page.params.slug : null;
-
   /*
    * Redirect value to allow redirecting in the edge. This is an optional value.
    */
@@ -156,8 +163,19 @@ async function handleCachedPageRequest(
       (redirect.permanent
         ? PERMANENT_REDIRECT_STATUS
         : TEMPORARY_REDIRECT_STATUS);
+
+      let destination = redirect.destination;
+
+      if (page.params) {
+        for (const param in page.params) {
+          const regex = new RegExp(`\\[${param}\\]`);
+
+          destination = destination.replace(regex, page.params[param]);
+        }
+      }
+
       const headers = {
-        Location: redirect.destination.replace(/\[slug\]/, slug)
+        Location: destination
       };
       return new Response(null, { status: statusCode, headers: headers });
   }
