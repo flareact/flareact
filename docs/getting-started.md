@@ -98,5 +98,6 @@ CF_ACCOUNT_ID=youraccountid
 Or pass it to `yarn dev` as an environment variable:
 
 ```bash
-CF_ACCOUNT_ID=youraccountid yarn dev
+CF_ACCOUNT_ID=youraccountid
+yarn dev
 ```
