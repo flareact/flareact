@@ -69,5 +69,21 @@ module.exports = {
 It expects an array to be returned holding objects with source, destination, and permanent properties:
 
 - `source` is the incoming request path pattern.
-- `destination` is the path you want to route to.
+- `destination` is the location you want to route to. This can either be a path or a full url.
 - `permanent` if the redirect is permanent or not.
+
+URL parameters provided in the source request can be transferred to the redirect like so:
+
+```js
+module.exports = {
+  async redirects() {
+    return [
+      {
+        source: '/blog/[slug]',
+        destination: '/news/[slug]',
+        permanent: true,
+      },
+    ]
+  },
+};
+```

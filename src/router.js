@@ -57,13 +57,13 @@ export function RouterProvider({
 
       if (!pageCache[normalizedAsPath] || hasPagePropsExpired(pageCache[normalizedAsPath].expiry)) {
         const page = await pageLoader.loadPage(pagePath);
-        const { pageProps, redirected, url } = await pageLoader.loadPageProps(normalizedAsPath);
+        const { pageProps } = await pageLoader.loadPageProps(normalizedAsPath);
 
-        if (redirected === true) {
-          if (url[0] === "/") {
-            router.push(url);
+        if (pageProps.redirect && pageProps.redirect.destination) {
+          if (pageProps.redirect.destination.startsWith("/")) {
+            router.push(pageProps.redirect.destination, pageProps.redirect.as);
           } else {
-            window.location.href = url;
+            window.location.href = pageProps.redirect.as;
           }
 
           return;
