@@ -80,10 +80,6 @@ export default class PageLoader {
     const url = getPagePropsUrl(pagePath);
     const res = await fetch(url);
 
-    if (res.redirected === true) {
-      return res;
-    }
-
     return await res.json();
   }
 
