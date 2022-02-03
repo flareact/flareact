@@ -87,3 +87,5 @@ module.exports = {
   },
 };
 ```
+
+Note that if redirects for a page are defined in both the edge props and the custom webpack config then the latter will be given priority.
