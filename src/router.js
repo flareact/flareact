@@ -14,12 +14,9 @@ export function RouterProvider({
   initialComponent,
   pageLoader,
 }) {
-  const {
-    protocol,
-    host,
-    pathname: initialPathname,
-    search,
-  } = new URL(initialUrl);
+  const { protocol, host, pathname: initialPathname, search } = new URL(
+    initialUrl
+  );
   const [route, setRoute] = useState({
     href: initialPagePath,
     asPath: initialPathname + search,
@@ -51,7 +48,7 @@ export function RouterProvider({
   useEffect(() => {
     // On initial page load, replace history state with format expected by router
     window.history.replaceState(route, null, route.asPath);
-  }, []);
+  }, [])
 
   useEffect(() => {
     async function loadNewPage() {
@@ -59,10 +56,7 @@ export function RouterProvider({
       const pagePath = normalizePathname(href);
       const normalizedAsPath = normalizePathname(asPath);
 
-      if (
-        !pageCache[normalizedAsPath] ||
-        hasPagePropsExpired(pageCache[normalizedAsPath].expiry)
-      ) {
+      if ( !pageCache[normalizedAsPath] || hasPagePropsExpired(pageCache[normalizedAsPath].expiry)) {
         const page = await pageLoader.loadPage(pagePath);
         const { pageProps } = await pageLoader.loadPageProps(normalizedAsPath);
         const revalidateSeconds = getRevalidateValue(pageProps);
@@ -93,7 +87,7 @@ export function RouterProvider({
       return null;
     }
 
-    return Date.now() + seconds * 1000;
+    return Date.now() + (seconds * 1000);
   }
 
   function hasPagePropsExpired(expiry) {

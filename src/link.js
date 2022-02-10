@@ -1,5 +1,4 @@
 import React, { Children, useEffect, useState } from "react";
-
 import { useRouter } from "./router";
 
 let prefetched = {};
