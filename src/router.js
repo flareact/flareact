@@ -1,6 +1,7 @@
-import React, { useContext, useState, useEffect, useMemo } from "react";
-import { extractDynamicParams } from "./utils";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+
 import { DYNAMIC_PAGE } from "./worker/pages";
+import { extractDynamicParams } from "./utils";
 
 const RouterContext = React.createContext();
 
@@ -13,9 +14,12 @@ export function RouterProvider({
   initialComponent,
   pageLoader,
 }) {
-  const { protocol, host, pathname: initialPathname, search } = new URL(
-    initialUrl
-  );
+  const {
+    protocol,
+    host,
+    pathname: initialPathname,
+    search,
+  } = new URL(initialUrl);
   const [route, setRoute] = useState({
     href: initialPagePath,
     asPath: initialPathname + search,
@@ -45,17 +49,20 @@ export function RouterProvider({
   }, [protocol, host, route.asPath, params]);
 
   useEffect(() => {
-    // On initial page load, replace history state with format expected by router 
+    // On initial page load, replace history state with format expected by router
     window.history.replaceState(route, null, route.asPath);
-  }, [])
+  }, []);
 
   useEffect(() => {
     async function loadNewPage() {
-      const { href, asPath } = route;
+      const { href, asPath, scroll } = route;
       const pagePath = normalizePathname(href);
       const normalizedAsPath = normalizePathname(asPath);
 
-      if (!pageCache[normalizedAsPath] || hasPagePropsExpired(pageCache[normalizedAsPath].expiry)) {
+      if (
+        !pageCache[normalizedAsPath] ||
+        hasPagePropsExpired(pageCache[normalizedAsPath].expiry)
+      ) {
         const page = await pageLoader.loadPage(pagePath);
         const { pageProps } = await pageLoader.loadPageProps(normalizedAsPath);
         const revalidateSeconds = getRevalidateValue(pageProps);
@@ -69,7 +76,9 @@ export function RouterProvider({
       }
 
       setComponent(pageCache[normalizedAsPath]);
-      setTimeout(() => scrollToHash(asPath), 0);
+      if (scroll) {
+        setTimeout(() => scrollToHash(asPath), 0);
+      }
     }
 
     if (initialPath === route.asPath) {
@@ -83,8 +92,8 @@ export function RouterProvider({
     if (seconds === null) {
       return null;
     }
-  
-    return Date.now() + (seconds * 1000);
+
+    return Date.now() + seconds * 1000;
   }
 
   function hasPagePropsExpired(expiry) {

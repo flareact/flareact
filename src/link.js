@@ -1,4 +1,5 @@
 import React, { Children, useEffect, useState } from "react";
+
 import { useRouter } from "./router";
 
 let prefetched = {};
@@ -15,7 +16,7 @@ export default function Link(props) {
   const [childElm, setChildElm] = useState();
   const child = Children.only(props.children);
 
-  const { href, as } = props;
+  const { href, as, scroll = true } = props;
 
   const shouldPrefetch = props.prefetch !== false;
 
@@ -54,7 +55,7 @@ export default function Link(props) {
 
     e.preventDefault();
 
-    router.push(href, as);
+    router.push(href, as, scroll);
   }
 
   const childProps = {
