@@ -110,12 +110,13 @@ export function RouterProvider({
     return pageProps.revalidate;
   }
 
-  function push(href, as) {
+  function push(href, as, scroll) {
     const asPath = as || href;
 
     setRoute({
       href,
       asPath,
+      scroll
     });
 
     // Blank this out so any return trips to the original component re-fetches props.
