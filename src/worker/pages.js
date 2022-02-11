@@ -75,7 +75,17 @@ export function resolvePagePath(pagePath, keys) {
     page = pagesMap.find((p) => p.test.test(pagePath + "/index"));
   }
 
-  if (!page) return null;
+  /**
+   * No page found, try serving 404.js
+   */
+  if (!page) {
+    return {
+      page: './404.js',
+      params: {
+        originalPath: pagePath
+      }
+    }
+  }
 
   /**
    * If pagePath ends in /index trim it off (unless page is /index) to match router
