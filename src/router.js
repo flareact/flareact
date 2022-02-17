@@ -125,6 +125,16 @@ export function RouterProvider({
     window.history.pushState({ href, asPath }, null, asPath);
   }
 
+  // Navigate back in history
+  function back() {
+    window.history.back()
+  }
+
+  // Reload the current URL
+  function reload() {
+    window.location.reload()
+  }
+
   function prefetch(href, as, { priority } = {}) {
     if (process.env.NODE_ENV !== "production") {
       return;
@@ -195,6 +205,8 @@ export function RouterProvider({
     pathname: route.href,
     asPath: route.asPath,
     push,
+    back,
+    reload,
     prefetch,
     query,
   };
