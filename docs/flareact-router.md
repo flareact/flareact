@@ -22,5 +22,11 @@ export default function Index() {
 
   // Navigate to the dynamic route /posts/[slug] using `href`, `as`
   router.push("/posts/[slug]", "/posts/my-first-post");
+
+  // Navigate back in history
+  router.back();
+
+  // Reload the current URL
+  router.reload();
 }
 ```
