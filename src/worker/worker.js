@@ -27,19 +27,28 @@ export async function handleEvent(event, context, DEBUG) {
 
       return await getAssetFromKV(event, options);
     } catch (e) {
-      // if an error is thrown try to serve the asset at 404.html
+      // if an error is thrown try to serve 404 response
       if (!DEBUG) {
         try {
-          let notFoundResponse = await getAssetFromKV(event, {
-            mapRequestToAsset: (req) =>
-              new Request(`${new URL(req.url).origin}/404.html`, req),
-          });
+          // try serving 404.js route
+          const newEvent = {};
+          newEvent.request = new Request(
+            `${new URL(event.request.url).origin}/404`,
+            new Request(event.request)
+          );
+          return await handleRequest(newEvent, context, async () => {
+            //no 404.js, try 404.html
+            let notFoundResponse = await getAssetFromKV(event, {
+              mapRequestToAsset: (req) =>
+                new Request(`${new URL(req.url).origin}/404.html`, req),
+            });
 
-          return new Response(notFoundResponse.body, {
-            ...notFoundResponse,
-            status: 404,
+            return new Response(notFoundResponse.body, {
+              ...notFoundResponse,
+              status: 404,
+            });
           });
-        } catch (e) {}
+        } catch (e) { }
       }
 
       return new Response(e.message || e.toString(), { status: 500 });

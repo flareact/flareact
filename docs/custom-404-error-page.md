@@ -32,13 +32,11 @@ To create a custom React powered 404 page you can create a `pages/404.js` file.
 
 ```
 // pages/404.js
-export async function getEdgeProps({ params }) {
-    const { originalPath } = params;
+export async function getEdgeProps() {
     const data = await someFallbackDataRequest();
     
     return {
         props: {
-            originalPath,
             data,
         },
         notFound: true, // send 404 header
@@ -46,10 +44,10 @@ export async function getEdgeProps({ params }) {
     }
 }
 
-export default function Index({ originalPath, data }) {
+export default function Index({ data }) {
     return (
         <div>
-          <h1>{originalPath} - 404 Not Found </h1>
+          <h1>404 Not Found </h1>
           <ul>
             {data.map((item) => {
               return <li key={item.id}>...</li>;
