@@ -6,6 +6,8 @@ Accessing a path that has no corresponding [page](/docs/pages) will give the fol
 could not find some-path/index.html in your content namespace
 ```
 
+## Static html page
+
 If you want to customize the 404 Not Found page for your application, you can add a static `404.html` HTML document in `/public`:
 
 ```html
@@ -24,4 +26,36 @@ If you want to customize the 404 Not Found page for your application, you can ad
 
 You can reference other assets, such as stylesheets and images, stored as [static files](/docs/static-file-serving) from within the HTML document.
 
-Note that it is currently **not possible to use a React page component** from `/pages` to generate the 404 Not Found page.
+## React powered 404 page
+
+To create a custom React powered 404 page you can create a `pages/404.js` file.
+
+```
+// pages/404.js
+export async function getEdgeProps() {
+    const data = await someFallbackDataRequest();
+    
+    return {
+        props: {
+            data,
+        },
+        notFound: true, // send 404 header
+        revalidate: 60, // Revalidate your data once every 60 seconds
+    }
+}
+
+export default function Index({ data }) {
+    return (
+        <div>
+          <h1>404 Not Found </h1>
+          <ul>
+            {data.map((item) => {
+              return <li key={item.id}>...</li>;
+            })}
+          </ul>
+        </div>
+    )
+}
+```
+
+Note: `404.js` will take precedence over `404.html`. A 404 response will be returned on hard page loads only.
