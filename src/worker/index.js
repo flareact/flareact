@@ -18,29 +18,6 @@ export async function handleRequest(event, context, fallback) {
   }
 
   try {
-    if (pathname.startsWith("/_flareact/props")) {
-      const pagePath = pathname.replace(/\/_flareact\/props|\.json/g, "");
-
-      return await handleCachedPageRequest(
-        event,
-        context,
-        pagePath,
-        query,
-        (_, props) => {
-          return new Response(
-            JSON.stringify({
-              pageProps: props,
-            }),
-            {
-              status: 200,
-              headers: {
-                "content-type": "application/json",
-              },
-            }
-          );
-        }
-      );
-    }
 
     const normalizedPathname = normalizePathname(pathname);
 
@@ -66,7 +43,7 @@ export async function handleRequest(event, context, fallback) {
     return await handleCachedPageRequest(
       event,
       context,
-      normalizedPathname,
+      pathname,
       query,
       async (page, props) => {
         const html = await render({
@@ -93,6 +70,19 @@ export async function handleRequest(event, context, fallback) {
           status: statusCode,
           headers: headers,
         });
+      },
+      (_, props) => {
+        return new Response(
+          JSON.stringify({
+            pageProps: props,
+          }),
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          }
+        );
       }
     );
   } catch (e) {
@@ -107,9 +97,10 @@ export async function handleRequest(event, context, fallback) {
 async function handleCachedPageRequest(
   event,
   context,
-  normalizedPathname,
+  pathname,
   query,
-  generateResponse
+  generateHtmlResponse,
+  generatePropsResponse
 ) {
   const cache = caches.default;
   const cacheKey = getCacheKey(event.request);
@@ -117,10 +108,44 @@ async function handleCachedPageRequest(
 
   if (!dev && cachedResponse) return cachedResponse;
 
-  const page = getPage(normalizedPathname, context);
-  const props = await getPageProps(page, query, event);
+  let normalizedPathname = normalizePathname(pathname);
+  const propsRequest = pathname.startsWith("/_flareact/props");
 
-  let response = await generateResponse(page, props);
+  if (propsRequest) {
+    normalizedPathname = normalizedPathname.replace(/\/_flareact\/props|\.json/g, "");
+  }
+
+  const propsCacheKey = propsRequest ? cacheKey : getPropsCacheKey(event.request);
+
+  const page = getPage(normalizedPathname, context);
+  let props = undefined; 
+  let shouldGeneratePropsResponse = true;
+
+  if (!propsRequest) {
+    // Check if props already cached for the requested page
+    const cachedProps = await cache.match(propsCacheKey);
+    if (cachedProps) {
+      ({ pageProps: props } = await cachedProps.json());
+      // Cached props found, skip creating props response
+      shouldGeneratePropsResponse = false;
+    }
+  }
+
+  if (!props) {
+    props = await getPageProps(page, query, event);
+  }
+
+  let propsResponse = undefined;
+  let htmlResponse = undefined;
+
+  // No cached props found, create props response to be cached regardless of request type
+  if (shouldGeneratePropsResponse) {
+    propsResponse = await generatePropsResponse(page, props);
+  }
+
+  if (!propsRequest) {
+    htmlResponse = await generateHtmlResponse(page, props);
+  }
 
   // Cache by default
   let shouldCache = true;
@@ -130,15 +155,31 @@ async function handleCachedPageRequest(
     if (props.revalidate === 0) {
       shouldCache = false;
     } else {
-      response.headers.append("Cache-Control", `max-age=${props.revalidate}`);
+      if (propsResponse) {
+        propsResponse.headers.append("Cache-Control", `max-age=${props.revalidate}`);
+      }
+      if (htmlResponse) {
+        htmlResponse.headers.append("Cache-Control", `max-age=${props.revalidate}`);
+      }
     }
   }
 
   if (shouldCache) {
-    await cache.put(cacheKey, response.clone());
+    if (propsResponse) {
+      await cache.put(propsCacheKey, propsResponse.clone());
+    }
+    if (htmlResponse) {
+      await cache.put(cacheKey, htmlResponse.clone());
+    }
   }
 
-  return response;
+  return propsRequest ? propsResponse : htmlResponse;
+}
+
+function getPropsCacheKey(request) {
+  const url = new URL(request.url);
+  const propsUrl = `${url.origin}/_flareact/props${url.pathname}.json${url.search}/${process.env.BUILD_ID}`;
+  return new Request(new URL(propsUrl).toString(), request);
 }
 
 function getCacheKey(request) {
