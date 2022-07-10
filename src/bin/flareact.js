@@ -17,20 +17,22 @@ dotenv.config();
 const yargs = require("yargs");
 
 let rootPath = "";
-let webpackConfigPath =
+let webpackClientConfigPath =
   "node_modules/flareact/configs/webpack.client.config.js";
+let webpackWorkerConfigPath =
+  "node_modules/flareact/configs/webpack.worker.config.js";
 
-let isWebpackConfigFound = () => fs.existsSync(rootPath + webpackConfigPath);
+let isWebpackClientConfigFound = () => fs.existsSync(rootPath + webpackClientConfigPath);
 
 for (let i = 0; i < 3; i++) {
-  if (isWebpackConfigFound()) {
+  if (isWebpackClientConfigFound()) {
     break;
   }
   rootPath += "../";
 }
 
-if (isWebpackConfigFound()) {
-  webpackConfigPath = rootPath + webpackConfigPath;
+if (isWebpackClientConfigFound()) {
+  webpackClientConfigPath = rootPath + webpackClientConfigPath;
 } else {
   const firstLine =
     "⚠ Cannot find node_modules/flareact/configs/webpack.client.config.js.";
@@ -73,13 +75,13 @@ if (argv._.includes("dev")) {
   concurrently(
     [
       {
-        command: "wrangler dev",
-        name: "worker",
-        env: { WORKER_DEV: true, IS_WORKER: true },
+        command: `webpack --config ${webpackWorkerConfigPath} --mode production && webpack --config ${webpackClientConfigPath} --mode production && wrangler dev`,
+        name: "build",
+        env: { NODE_ENV: "development", WORKER_DEV: true, IS_WORKER: true },
       },
       {
-        command: `webpack-dev-server --config ${webpackConfigPath} --mode development --port ${argv.port}`,
-        name: "client",
+        command: `webpack-dev-server --config ${webpackClientConfigPath} --mode development --port ${argv.port}`,
+        name: "dev-server",
         env: { NODE_ENV: "development" },
       },
     ],
@@ -110,10 +112,10 @@ if (argv._.includes("publish")) {
   concurrently(
     [
       {
-        command: `webpack --config ${webpackConfigPath} --out ./out --mode production && ${wranglerPublish}`,
-        name: "publish",
-        env: { NODE_ENV: "production", IS_WORKER: true },
-      },
+        command: `webpack --config ${webpackClientConfigPath} --mode production && webpack --config ${webpackWorkerConfigPath} --mode production && ${wranglerPublish}`,
+        name: "build",
+        env: { NODE_ENV: "production",IS_WORKER: true },
+      }
     ],
     {
       prefix: "name",
@@ -134,8 +136,8 @@ if (argv._.includes("build")) {
   concurrently(
     [
       {
-        command: `webpack --config ${webpackConfigPath} --out ./out --mode production`,
-        name: "publish",
+        command: `webpack --config ${webpackWorkerConfigPath} --mode production && webpack --config ${webpackClientConfigPath} --mode production`,
+        name: "build",
         env: { NODE_ENV: "production" },
       },
     ],
