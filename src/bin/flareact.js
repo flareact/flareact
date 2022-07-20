@@ -136,7 +136,7 @@ if (argv._.includes("build")) {
   concurrently(
     [
       {
-        command: `webpack --config ${webpackWorkerConfigPath} --mode production && webpack --config ${webpackClientConfigPath} --mode production`,
+        command: `webpack --config ${webpackClientConfigPath} --mode production && webpack --config ${webpackWorkerConfigPath} --mode production`,
         name: "build",
         env: { NODE_ENV: "production" },
       },
