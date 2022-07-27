@@ -75,7 +75,7 @@ if (argv._.includes("dev")) {
   concurrently(
     [
       {
-        command: `webpack --config ${webpackWorkerConfigPath} --mode production && webpack --config ${webpackClientConfigPath} --mode production && wrangler dev`,
+        command: `webpack --config ${webpackWorkerConfigPath} && wrangler dev`,
         name: "build",
         env: { NODE_ENV: "development", WORKER_DEV: true, IS_WORKER: true },
       },
