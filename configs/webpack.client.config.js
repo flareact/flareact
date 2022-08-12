@@ -82,6 +82,7 @@ const isModuleCSS = (module) => {
 };
 
 module.exports = (env, argv) => {
+  const customResolve = flareact.resolve ? flareact.resolve : {};
   const config = {
     ...baseConfig({ dev, isServer }),
     entry,
@@ -209,6 +210,9 @@ module.exports = (env, argv) => {
           "flareact-client-pages-loader"
         ),
       },
+    },
+    resolve: {
+      ...customResolve
     },
     output: {
       path: path.resolve(projectDir, "out/_flareact/static"),
