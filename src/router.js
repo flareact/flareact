@@ -1,6 +1,7 @@
-import React, { useContext, useState, useEffect, useMemo } from "react";
-import { extractDynamicParams } from "./utils";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+
 import { DYNAMIC_PAGE } from "./worker/pages";
+import { extractDynamicParams } from "./utils";
 
 const RouterContext = React.createContext();
 
@@ -45,17 +46,17 @@ export function RouterProvider({
   }, [protocol, host, route.asPath, params]);
 
   useEffect(() => {
-    // On initial page load, replace history state with format expected by router 
+    // On initial page load, replace history state with format expected by router
     window.history.replaceState(route, null, route.asPath);
   }, [])
 
   useEffect(() => {
     async function loadNewPage() {
-      const { href, asPath } = route;
+      const { href, asPath, scroll } = route;
       const pagePath = normalizePathname(href);
       const normalizedAsPath = normalizePathname(asPath);
 
-      if (!pageCache[normalizedAsPath] || hasPagePropsExpired(pageCache[normalizedAsPath].expiry)) {
+      if ( !pageCache[normalizedAsPath] || hasPagePropsExpired(pageCache[normalizedAsPath].expiry)) {
         const page = await pageLoader.loadPage(pagePath);
         const { pageProps } = await pageLoader.loadPageProps(normalizedAsPath);
 
@@ -80,7 +81,9 @@ export function RouterProvider({
       }
 
       setComponent(pageCache[normalizedAsPath]);
-      setTimeout(() => scrollToHash(asPath), 0);
+      if (scroll) {
+        setTimeout(() => scrollToHash(asPath), 0);
+      }
     }
 
     if (initialPath === route.asPath) {
@@ -94,7 +97,7 @@ export function RouterProvider({
     if (seconds === null) {
       return null;
     }
-  
+
     return Date.now() + (seconds * 1000);
   }
 
@@ -118,18 +121,29 @@ export function RouterProvider({
     return pageProps.revalidate;
   }
 
-  function push(href, as) {
+  function push(href, as, scroll) {
     const asPath = as || href;
 
     setRoute({
       href,
       asPath,
+      scroll
     });
 
     // Blank this out so any return trips to the original component re-fetches props.
     setInitialPath("");
 
     window.history.pushState({ href, asPath }, null, asPath);
+  }
+
+  // Navigate back in history
+  function back() {
+    window.history.back()
+  }
+
+  // Reload the current URL
+  function reload() {
+    window.location.reload()
   }
 
   function prefetch(href, as, { priority } = {}) {
@@ -202,6 +216,8 @@ export function RouterProvider({
     pathname: route.href,
     asPath: route.asPath,
     push,
+    back,
+    reload,
     prefetch,
     query,
   };

@@ -58,3 +58,27 @@ export default function Index() {
   );
 }
 ```
+
+## Scroll
+
+The default behaviour of the Link component is to scroll to the top of the page.
+When there's a hash defined, it will scroll to the specific ID.
+
+This feature is useful for a layered component where each tab needs to update the route.
+By default, the scroll would go to the top of the page, but the correct behaviour is to update the route and change the tab's content.
+
+You can disable this behaviour by passing a `false` value to `scroll`:
+
+```js
+import Link from "flareact/link";
+
+export default function Index() {
+  return (
+    <div>
+      <Link href="/about" scroll={false}>
+        <a>Change route without scrolling top</a>
+      </Link>
+    </div>
+  );
+}
+```
