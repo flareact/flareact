@@ -7,6 +7,8 @@ import {
 } from "../constants";
 import { config } from "./flareact.config";
 
+const CACHEABLE_REQUEST_METHODS = ["GET", "HEAD"];
+
 const dev =
   (typeof DEV !== "undefined" && !!DEV) ||
   process.env.NODE_ENV !== "production";
@@ -117,13 +119,13 @@ export async function handleRequest(event, context, fallback) {
         let statusCode = 200;
 
         if (typeof props.notFound !== "undefined" && props.notFound === true) {
-            statusCode = 404;
+          statusCode = 404;
         }
 
-        let headers = { "content-type": "text/html" }
+        let headers = { "content-type": "text/html" };
 
         if (typeof props.customHeaders !== "undefined") {
-          headers = {...headers, ...props.customHeaders};
+          headers = { ...headers, ...props.customHeaders };
         }
 
         return new Response(html, {
@@ -210,7 +212,8 @@ async function handleCachedPageRequest(
     }
   }
 
-  if (shouldCache) {
+  // This API only supports caching of GET or HEAD request methods
+  if (shouldCache && CACHEABLE_REQUEST_METHODS.includes(event.request.method)) {
     await cache.put(cacheKey, response.clone());
   }
 

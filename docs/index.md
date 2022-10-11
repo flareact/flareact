@@ -41,7 +41,7 @@ Right — *another* React framework. Here's why Flareact might be useful to you
 
 ## About
 
-Flareact is an experiment created by [Josh Larson](https://www.jplhomer.org/) in August 2020.
+Flareact **is not an official Cloudflare project**. Flareact is an experiment created by [Josh Larson](https://www.jplhomer.org/) in August 2020.
 
 Lots of inspiration and thanks to:
 
