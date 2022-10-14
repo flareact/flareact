@@ -121,7 +121,7 @@ export function RouterProvider({
   function push(href, as, options) {
     const asPath = as || href;
 
-    if (options.shallow && isShallowRoutingPossible(asPath)) {
+    if (options && options.shallow && isShallowRoutingPossible(asPath)) {
       setShallowRoute(true);
     } else {
       setShallowRoute(false);
