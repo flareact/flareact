@@ -77,7 +77,7 @@ export function RouterProvider({
         }
 
         setComponent(pageCache[normalizedAsPath]);
-        if (options.scroll) {
+        if (options && options.scroll) {
           setTimeout(() => scrollToHash(asPath), 0);
         }
       }
