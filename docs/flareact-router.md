@@ -23,6 +23,9 @@ export default function Index() {
   // Navigate to the dynamic route /posts/[slug] using `href`, `as`
   router.push("/posts/[slug]", "/posts/my-first-post");
 
+  // Navigate to a route using config object
+  router.push("/", "/?page=2", { shallow: true, scroll: false })
+
   // Navigate back in history
   router.back();
 
@@ -30,3 +33,11 @@ export default function Index() {
   router.reload();
 }
 ```
+
+## router.push(href, as, options)
+
+* `href` -  URL path to navigate to
+* `as` - Optional specific URL to be displayed in the address bar, e.g. for dynamic routes or query strings
+* `options` - Optional config object:
+    * `shallow` - Optional. Update current page path without rerunning `getEdgeProps`. Default = `false`
+    * `scroll` - Optional. Controls whether to scroll to the top of the page after navigation. Default = `true`
