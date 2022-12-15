@@ -15,7 +15,7 @@ export default function Link(props) {
   const [childElm, setChildElm] = useState();
   const child = Children.only(props.children);
 
-  const { href, as, scroll = true } = props;
+  const { href, as, scroll = true, shallow = false } = props;
 
   const shouldPrefetch = props.prefetch !== false;
 
@@ -54,7 +54,7 @@ export default function Link(props) {
 
     e.preventDefault();
 
-    router.push(href, as, scroll);
+    router.push(href, as, { scroll, shallow });
   }
 
   const childProps = {

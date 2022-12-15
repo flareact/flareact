@@ -82,3 +82,31 @@ export default function Index() {
   );
 }
 ```
+
+## Shallow
+
+In some circumstances it may be desirable for the page URL to be updated without rerunning `getEdgeProps`. In this case a `true` value should be passed to `shallow`.
+
+This will only work for routing to the current page, e.g. updating `/posts` to `/posts?page=2` can be shallow routed but `/posts` to `/posts/2` will load the destination props.
+
+```js
+import Link from "flareact/link";
+
+export async function getEdgeProps() {
+    const props = await someResourceIntensiveFunction();
+
+    return {
+        props
+    };
+}
+
+export default function Index() {
+  return (
+    <div>
+      <Link href="/" as="/?page=2" shallow={true}>
+        <a>Change route without rerunning getEdgeProps</a>
+      </Link>
+    </div>
+  );
+}
+```
