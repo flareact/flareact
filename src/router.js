@@ -66,6 +66,17 @@ export function RouterProvider({
           const { pageProps } = await pageLoader.loadPageProps(
             normalizedAsPath
           );
+
+          if (pageProps.redirect && pageProps.redirect.destination) {
+            if (pageProps.redirect.destination.startsWith("/")) {
+              router.push(pageProps.redirect.destination, pageProps.redirect.as);
+            } else {
+              window.location.href = pageProps.redirect.as;
+            }
+
+            return;
+          }
+          
           const revalidateSeconds = getRevalidateValue(pageProps);
           const expiry = generatePagePropsExpiry(revalidateSeconds);
 
