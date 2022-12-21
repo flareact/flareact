@@ -151,7 +151,7 @@ export async function getPageProps(page, query, event) {
   };
 
   if (fetcher) {
-    const { props, notFound, customHeaders, revalidate } = await fetcher({
+    const { props, notFound, customHeaders, revalidate, redirect } = await fetcher({
       params,
       query: queryObject,
       event,
@@ -162,6 +162,7 @@ export async function getPageProps(page, query, event) {
       notFound,
       customHeaders,
       revalidate,
+      redirect,
     };
   }
 

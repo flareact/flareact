@@ -1,6 +1,11 @@
 import { normalizePathname } from "../router";
-import { getPage, getPageProps, PageNotFoundError } from "./pages";
+import { getPage, getPageProps, PageNotFoundError, resolvePagePath } from "./pages";
 import { render } from "./render";
+import {
+  PERMANENT_REDIRECT_STATUS,
+  TEMPORARY_REDIRECT_STATUS,
+} from "../constants";
+import { config } from "./flareact.config";
 
 const CACHEABLE_REQUEST_METHODS = ["GET", "HEAD"];
 
@@ -20,14 +25,27 @@ export async function handleRequest(event, context, fallback) {
   }
 
   try {
-    if (pathname.startsWith("/_flareact/props")) {
-      const pagePath = pathname.replace(/\/_flareact\/props|\.json/g, "");
+    const pagePath = pathname.replace(/\/_flareact\/props|\.json/g, "");
 
+    const normalizedPathname = normalizePathname(pagePath);
+    const resolvedPage = resolvePagePath(normalizedPathname, context.keys());
+    const resolvedPagePath = resolvedPage ? resolvedPage.pagePath : null;
+
+    let reducedRedirect;
+
+    if (config && typeof config.redirects !== "undefined") {
+      reducedRedirect = config.redirects.find(
+        (item) => item.source === normalizedPathname || item.source === resolvedPagePath
+      );
+    }
+
+    if (pathname.startsWith("/_flareact/props")) {
       return await handleCachedPageRequest(
         event,
         context,
         pagePath,
         query,
+        reducedRedirect,
         (_, props) => {
           return new Response(
             JSON.stringify({
@@ -44,7 +62,25 @@ export async function handleRequest(event, context, fallback) {
       );
     }
 
-    const normalizedPathname = normalizePathname(pathname);
+    if (reducedRedirect) {
+      const statusCode = reducedRedirect.permanent
+        ? PERMANENT_REDIRECT_STATUS
+        : TEMPORARY_REDIRECT_STATUS;
+      let destination = reducedRedirect.destination;
+
+      if (resolvedPage && resolvedPage.params) {
+        for (const param in resolvedPage.params) {
+          const regex = new RegExp(`\\[${param}\\]`);
+
+          destination = destination.replace(regex, resolvedPage.params[param]);
+        }
+      }
+
+      const headers = {
+        Location: destination
+      };
+      return new Response(null, { status: statusCode, headers: headers });
+    }
 
     if (pageIsApi(normalizedPathname)) {
       const page = getPage(normalizedPathname, context);
@@ -70,6 +106,7 @@ export async function handleRequest(event, context, fallback) {
       context,
       normalizedPathname,
       query,
+      null,
       async (page, props) => {
         const html = await render({
           page,
@@ -111,8 +148,11 @@ async function handleCachedPageRequest(
   context,
   normalizedPathname,
   query,
+  staticRedirect,
   generateResponse
 ) {
+  const url = new URL(event.request.url);
+  const { pathname } = url;
   const cache = caches.default;
   const cacheKey = getCacheKey(event.request);
   const cachedResponse = await cache.match(cacheKey);
@@ -121,6 +161,42 @@ async function handleCachedPageRequest(
 
   const page = getPage(normalizedPathname, context);
   const props = await getPageProps(page, query, event);
+
+  if (staticRedirect) {
+    props.redirect = staticRedirect;
+  }
+
+  /*
+   * Redirect value to allow redirecting in the edge. This is an optional value.
+   */
+  if (props && typeof props.redirect !== "undefined") {
+    const { redirect = {} } = props;
+    const statusCode =
+      redirect.statusCode ||
+      (redirect.permanent
+        ? PERMANENT_REDIRECT_STATUS
+        : TEMPORARY_REDIRECT_STATUS);
+
+      let asPath = redirect.destination;
+
+      if (page.params) {
+        for (const param in page.params) {
+          const regex = new RegExp(`\\[${param}\\]`);
+
+          asPath = asPath.replace(regex, page.params[param]);
+        }
+      }
+
+      if (!pathname.startsWith("/_flareact/props")) {
+        const headers = {
+          Location: asPath
+        };
+        return new Response(null, { status: statusCode, headers: headers });
+      } else {
+        redirect.as = asPath;
+        props.redirect = redirect;
+      }
+  }
 
   let response = await generateResponse(page, props);
 
