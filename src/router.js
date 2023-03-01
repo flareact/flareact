@@ -26,7 +26,6 @@ export function RouterProvider({
     Component: initialComponent,
     pageProps: null,
   });
-  const [shallowRoute, setShallowRoute] = useState(false);
 
   const params = useMemo(() => {
     const isDynamic = DYNAMIC_PAGE.test(route.href);
@@ -53,8 +52,9 @@ export function RouterProvider({
 
   useEffect(() => {
     async function loadNewPage() {
-      if (!shallowRoute) {
-        const { href, asPath, options } = route;
+      const { href, asPath, options } = route;
+      
+      if (!options?.shallow) {  
         const pagePath = normalizePathname(href);
         const normalizedAsPath = normalizePathname(asPath);
 
@@ -132,10 +132,9 @@ export function RouterProvider({
   function push(href, as, options) {
     const asPath = as || href;
 
-    if (options && options.shallow && isShallowRoutingPossible(asPath)) {
-      setShallowRoute(true);
-    } else {
-      setShallowRoute(false);
+    // If shallow routing = true but not possible then set to false
+    if (options && options.shallow && !isShallowRoutingPossible(asPath)) {
+      options.shallow = false;
     }
 
     // Blank this out so any return trips to the original component re-fetches props.
