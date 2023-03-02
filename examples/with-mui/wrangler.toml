@@ -1,0 +1,19 @@
+name = "flareact-mui"
+type = "webpack"
+account_id = ""
+workers_dev = true
+route = ""
+zone_id = ""
+webpack_config = "node_modules/flareact/webpack"
+compatibility_date = "2022-01-07"
+
+[site]
+bucket = "out"
+entry-point = "./"
+
+[env.staging]
+workers_dev = true
+
+[miniflare]
+workers_dev = true
+live_reload = true
