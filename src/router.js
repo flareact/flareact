@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
-
+import React, { useContext, useEffect, useMemo, useState, useRef } from "react";
+import mitt from "mitt";
 import { DYNAMIC_PAGE } from "./worker/pages";
 import { extractDynamicParams } from "./utils";
 
@@ -14,6 +14,8 @@ export function RouterProvider({
   initialComponent,
   pageLoader,
 }) {
+  const events = mitt();
+
   const { protocol, host, pathname: initialPathname, search } = new URL(
     initialUrl
   );
@@ -26,6 +28,8 @@ export function RouterProvider({
     Component: initialComponent,
     pageProps: null,
   });
+
+  const beforePopStateCallback = useRef(null);
 
   const params = useMemo(() => {
     const isDynamic = DYNAMIC_PAGE.test(route.href);
@@ -53,8 +57,13 @@ export function RouterProvider({
   useEffect(() => {
     async function loadNewPage() {
       const { href, asPath, options } = route;
+
+      const shallow = isShallowRoute(options);
+
+      console.log("routeChangeStart(url, { shallow })", asPath)
+      events.emit("routeChangeStart", asPath, { shallow: shallow });
       
-      if (!options?.shallow) {  
+      if (!shallow) {  
         const pagePath = normalizePathname(href);
         const normalizedAsPath = normalizePathname(asPath);
 
@@ -92,6 +101,8 @@ export function RouterProvider({
           setTimeout(() => scrollToHash(asPath), 0);
         }
       }
+      console.log("routeChangeComplete(url, { shallow })")
+      events.emit("routeChangeComplete", route.asPath, { shallow: shallow });
     }
 
     if (initialPath === route.asPath) {
@@ -100,6 +111,15 @@ export function RouterProvider({
 
     loadNewPage();
   }, [route, initialPath]);
+
+  function isShallowRoute(options) {
+    console.log("OPTIONS", options);
+    if (options?.shallow === true) {
+      return true;
+    }
+
+    return false;
+  }
 
   function generatePagePropsExpiry(seconds) {
     if (seconds === null) {
@@ -146,6 +166,10 @@ export function RouterProvider({
       options,
     });
 
+    const shallow = isShallowRoute(options);
+
+    events.emit("beforeHistoryChange", asPath, { shallow: shallow });
+
     window.history.pushState({ href, asPath }, null, asPath);
   }
 
@@ -159,6 +183,10 @@ export function RouterProvider({
       // If the route is already rendered on the screen.
       normalizedCurrentAsPath === normalizedNewAsPath
     );
+  }
+
+  function beforePopState(callback) {
+    beforePopStateCallback.current = callback;    
   }
 
   // Navigate back in history
@@ -187,6 +215,17 @@ export function RouterProvider({
 
   useEffect(() => {
     function handlePopState(e) {
+      console.log("beforePopStateCallback", beforePopStateCallback)
+      if (typeof beforePopStateCallback.current === "function") {
+        if (beforePopStateCallback.current(e.state) === false) {
+          console.log("beforePopState RETURNED FALSE (stop now)");
+          //return;
+        } else {
+          console.log("beforePopState RETURNED TRUE (continue)");
+        }
+      }
+      
+
       let newRoute = {};
 
       const { state } = e;
@@ -208,9 +247,18 @@ export function RouterProvider({
       setRoute(newRoute);
     }
 
+    // if (beforePopStateCallback.current(e.state) === false) {
+    //   console.log("beforePopState RETURNED FALSE (stop now)");
+    //   return;
+    // } else {
+    //   console.log("beforePopState RETURNED TRUE (continue)");
+    // }
+
+    console.log("POPSTATE ADD");
     window.addEventListener("popstate", handlePopState);
 
     return () => {
+      console.log("POPSTATE REMOVE");
       window.removeEventListener("popstate", handlePopState);
     };
   }, [setRoute]);
@@ -245,6 +293,8 @@ export function RouterProvider({
     reload,
     prefetch,
     query,
+    events,
+    beforePopState
   };
 
   return (
