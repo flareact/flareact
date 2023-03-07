@@ -7,6 +7,8 @@ const RouterContext = React.createContext();
 
 let pageCache = {};
 
+const events = mitt();
+
 export function RouterProvider({
   children,
   initialUrl,
@@ -14,8 +16,6 @@ export function RouterProvider({
   initialComponent,
   pageLoader,
 }) {
-  const events = mitt();
-
   const { protocol, host, pathname: initialPathname, search } = new URL(
     initialUrl
   );
@@ -58,12 +58,13 @@ export function RouterProvider({
     async function loadNewPage() {
       const { href, asPath, options } = route;
 
+      console.log("isShallowRoute LOAD NEW PAGE", route);
       const shallow = isShallowRoute(options);
 
-      console.log("routeChangeStart(url, { shallow })", asPath)
+      console.log("routeChangeStart(url, { shallow })", asPath, shallow)
       events.emit("routeChangeStart", asPath, { shallow: shallow });
       
-      if (!shallow) {  
+      if (!shallow) {
         const pagePath = normalizePathname(href);
         const normalizedAsPath = normalizePathname(asPath);
 
@@ -96,6 +97,8 @@ export function RouterProvider({
           };
         }
 
+        console.log("PAGE CACHE", pageCache)
+
         setComponent(pageCache[normalizedAsPath]);
         if (options && options.scroll) {
           setTimeout(() => scrollToHash(asPath), 0);
@@ -104,6 +107,8 @@ export function RouterProvider({
       console.log("routeChangeComplete(url, { shallow })")
       events.emit("routeChangeComplete", route.asPath, { shallow: shallow });
     }
+
+    console.log("PATH CHECK", initialPath, route.asPath);
 
     if (initialPath === route.asPath) {
       return;
@@ -152,21 +157,28 @@ export function RouterProvider({
   function push(href, as, options) {
     const asPath = as || href;
 
+    console.log("push options", options);
+
     // If shallow routing = true but not possible then set to false
     if (options && options.shallow && !isShallowRoutingPossible(asPath)) {
       options.shallow = false;
     }
 
-    // Blank this out so any return trips to the original component re-fetches props.
-    setInitialPath("");
-
-    setRoute({
-      href,
-      asPath,
-      options,
-    });
-
+    console.log("isShallowRoute PUSH");
     const shallow = isShallowRoute(options);
+
+    console.log("push options after possible check", options);
+
+    //if (!shallow) {
+      // Blank this out so any return trips to the original component re-fetches props.
+      setInitialPath("");
+
+      setRoute({
+        href,
+        asPath,
+        options,
+      });
+    //}
 
     events.emit("beforeHistoryChange", asPath, { shallow: shallow });
 
