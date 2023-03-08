@@ -22,6 +22,9 @@ export function RouterProvider({
   const [route, setRoute] = useState({
     href: initialPagePath,
     asPath: initialPathname + search,
+    options: {
+      shallow: false,
+    },
   });
   const [initialPath, setInitialPath] = useState(initialPathname);
   const [component, setComponent] = useState({
@@ -40,6 +43,8 @@ export function RouterProvider({
   }, [route.asPath, route.href]);
 
   const query = useMemo(() => {
+    console.log("QUERY USE MEMO", protocol, host, route.asPath, params);
+
     const url = new URL(protocol + "//" + host + route.asPath);
     const queryParams = Object.fromEntries(url.searchParams.entries());
 
@@ -58,12 +63,12 @@ export function RouterProvider({
     async function loadNewPage() {
       const { href, asPath, options } = route;
 
-      console.log("isShallowRoute LOAD NEW PAGE", route);
+      //console.log("isShallowRoute LOAD NEW PAGE", route);
       const shallow = isShallowRoute(options);
 
       console.log("routeChangeStart(url, { shallow })", asPath, shallow)
       events.emit("routeChangeStart", asPath, { shallow: shallow });
-      
+
       if (!shallow) {
         const pagePath = normalizePathname(href);
         const normalizedAsPath = normalizePathname(asPath);
@@ -97,18 +102,19 @@ export function RouterProvider({
           };
         }
 
-        console.log("PAGE CACHE", pageCache)
-
         setComponent(pageCache[normalizedAsPath]);
         if (options && options.scroll) {
           setTimeout(() => scrollToHash(asPath), 0);
         }
       }
+
+      console.log("PAGE CACHE", pageCache);
+
       console.log("routeChangeComplete(url, { shallow })")
       events.emit("routeChangeComplete", route.asPath, { shallow: shallow });
     }
 
-    console.log("PATH CHECK", initialPath, route.asPath);
+    //console.log("PATH CHECK", initialPath, route.asPath);
 
     if (initialPath === route.asPath) {
       return;
@@ -182,7 +188,7 @@ export function RouterProvider({
 
     events.emit("beforeHistoryChange", asPath, { shallow: shallow });
 
-    window.history.pushState({ href, asPath }, null, asPath);
+    window.history.pushState({ href, asPath, options: { shallow: shallow } }, null, asPath);
   }
 
   function isShallowRoutingPossible(asPath) {
@@ -198,7 +204,7 @@ export function RouterProvider({
   }
 
   function beforePopState(callback) {
-    beforePopStateCallback.current = callback;    
+    beforePopStateCallback.current = callback;
   }
 
   // Navigate back in history
@@ -246,6 +252,9 @@ export function RouterProvider({
         newRoute = {
           href: state.href,
           asPath: state.asPath,
+          options: {
+            shallow: false
+          },
         };
       } else {
         const { pathname, search, hash } = window.location;
@@ -253,6 +262,9 @@ export function RouterProvider({
         newRoute = {
           href: pathname || "/",
           asPath: pathname + search + hash || "/",
+          options: {
+            shallow: false
+          },
         };
       }
 
