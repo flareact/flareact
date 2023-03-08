@@ -59,8 +59,6 @@ export function RouterProvider({
     async function loadNewPage() {
       const { href, asPath, options } = route;
 
-      console.log("ROUTE", route);
-
       const shallow = isShallowRoute(options);
 
       events.emit("routeChangeStart", { asPath, shallow });
