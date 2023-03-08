@@ -32,8 +32,6 @@ export function RouterProvider({
     pageProps: null,
   });
 
-  const beforePopStateCallback = useRef(null);
-
   const params = useMemo(() => {
     const isDynamic = DYNAMIC_PAGE.test(route.href);
 
@@ -43,8 +41,6 @@ export function RouterProvider({
   }, [route.asPath, route.href]);
 
   const query = useMemo(() => {
-    console.log("QUERY USE MEMO", protocol, host, route.asPath, params);
-
     const url = new URL(protocol + "//" + host + route.asPath);
     const queryParams = Object.fromEntries(url.searchParams.entries());
 
@@ -63,11 +59,11 @@ export function RouterProvider({
     async function loadNewPage() {
       const { href, asPath, options } = route;
 
-      //console.log("isShallowRoute LOAD NEW PAGE", route);
+      console.log("ROUTE", route);
+
       const shallow = isShallowRoute(options);
 
-      console.log("routeChangeStart(url, { shallow })", asPath, shallow)
-      events.emit("routeChangeStart", asPath, { shallow: shallow });
+      events.emit("routeChangeStart", { asPath, shallow });
 
       if (!shallow) {
         const pagePath = normalizePathname(href);
@@ -108,13 +104,8 @@ export function RouterProvider({
         }
       }
 
-      console.log("PAGE CACHE", pageCache);
-
-      console.log("routeChangeComplete(url, { shallow })")
-      events.emit("routeChangeComplete", route.asPath, { shallow: shallow });
+      events.emit("routeChangeComplete", { asPath: route.asPath, shallow });
     }
-
-    //console.log("PATH CHECK", initialPath, route.asPath);
 
     if (initialPath === route.asPath) {
       return;
@@ -124,7 +115,6 @@ export function RouterProvider({
   }, [route, initialPath]);
 
   function isShallowRoute(options) {
-    console.log("OPTIONS", options);
     if (options?.shallow === true) {
       return true;
     }
@@ -163,30 +153,23 @@ export function RouterProvider({
   function push(href, as, options) {
     const asPath = as || href;
 
-    console.log("push options", options);
-
     // If shallow routing = true but not possible then set to false
     if (options && options.shallow && !isShallowRoutingPossible(asPath)) {
       options.shallow = false;
     }
 
-    console.log("isShallowRoute PUSH");
     const shallow = isShallowRoute(options);
 
-    console.log("push options after possible check", options);
+    // Blank this out so any return trips to the original component re-fetches props.
+    setInitialPath("");
 
-    //if (!shallow) {
-      // Blank this out so any return trips to the original component re-fetches props.
-      setInitialPath("");
+    setRoute({
+      href,
+      asPath,
+      options,
+    });
 
-      setRoute({
-        href,
-        asPath,
-        options,
-      });
-    //}
-
-    events.emit("beforeHistoryChange", asPath, { shallow: shallow });
+    events.emit("beforeHistoryChange", { asPath, shallow });
 
     window.history.pushState({ href, asPath, options: { shallow: shallow } }, null, asPath);
   }
@@ -201,10 +184,6 @@ export function RouterProvider({
       // If the route is already rendered on the screen.
       normalizedCurrentAsPath === normalizedNewAsPath
     );
-  }
-
-  function beforePopState(callback) {
-    beforePopStateCallback.current = callback;
   }
 
   // Navigate back in history
@@ -232,18 +211,7 @@ export function RouterProvider({
   }
 
   useEffect(() => {
-    function handlePopState(e) {
-      console.log("beforePopStateCallback", beforePopStateCallback)
-      if (typeof beforePopStateCallback.current === "function") {
-        if (beforePopStateCallback.current(e.state) === false) {
-          console.log("beforePopState RETURNED FALSE (stop now)");
-          //return;
-        } else {
-          console.log("beforePopState RETURNED TRUE (continue)");
-        }
-      }
-      
-
+    function handlePopState(e) {     
       let newRoute = {};
 
       const { state } = e;
@@ -253,7 +221,7 @@ export function RouterProvider({
           href: state.href,
           asPath: state.asPath,
           options: {
-            shallow: false
+            shallow: isShallowRoute(state.options),
           },
         };
       } else {
@@ -263,7 +231,7 @@ export function RouterProvider({
           href: pathname || "/",
           asPath: pathname + search + hash || "/",
           options: {
-            shallow: false
+            shallow: false,
           },
         };
       }
@@ -271,18 +239,9 @@ export function RouterProvider({
       setRoute(newRoute);
     }
 
-    // if (beforePopStateCallback.current(e.state) === false) {
-    //   console.log("beforePopState RETURNED FALSE (stop now)");
-    //   return;
-    // } else {
-    //   console.log("beforePopState RETURNED TRUE (continue)");
-    // }
-
-    console.log("POPSTATE ADD");
     window.addEventListener("popstate", handlePopState);
 
     return () => {
-      console.log("POPSTATE REMOVE");
       window.removeEventListener("popstate", handlePopState);
     };
   }, [setRoute]);
@@ -318,7 +277,6 @@ export function RouterProvider({
     prefetch,
     query,
     events,
-    beforePopState
   };
 
   return (
