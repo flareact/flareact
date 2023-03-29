@@ -215,6 +215,11 @@ export function RouterProvider({
       const { state } = e;
 
       if (state) {
+        // If shallow routing = true but not possible then set to false
+        if (state.options && state.options.shallow && !isShallowRoutingPossible(state.asPath)) {
+          state.options.shallow = false;
+        }
+
         newRoute = {
           href: state.href,
           asPath: state.asPath,
