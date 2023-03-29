@@ -209,45 +209,52 @@ export function RouterProvider({
   }
 
   useEffect(() => {
-    function handlePopState(e) {     
-      let newRoute = {};
-
-      const { state } = e;
-
-      if (state) {
-        // If shallow routing = true but not possible then set to false
-        if (state.options && state.options.shallow && !isShallowRoutingPossible(state.asPath)) {
-          state.options.shallow = false;
-        }
-
-        newRoute = {
-          href: state.href,
-          asPath: state.asPath,
-          options: {
-            shallow: isShallowRoute(state.options),
-          },
-        };
-      } else {
-        const { pathname, search, hash } = window.location;
-
-        newRoute = {
-          href: pathname || "/",
-          asPath: pathname + search + hash || "/",
-          options: {
-            shallow: false,
-          },
-        };
-      }
-
-      setRoute(newRoute);
-    }
-
-    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("popstate", (e) => handlePopStateRef.current(e));
 
     return () => {
-      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("popstate", (e) => handlePopStateRef.current(e));
     };
   }, [setRoute]);
+
+  // Create a ref to store the pop state function. Gets round an issue regarding the event
+  // listener not having access to the latest useState info if function passed directly.
+  const handlePopStateRef = useRef(handlePopState);
+  
+  // Make sure its updated on each render
+  handlePopStateRef.current = handlePopState;
+
+  function handlePopState(e) {     
+    let newRoute = {};
+
+    const { state } = e;
+
+    if (state) {
+      // If shallow routing = true but not possible then set to false
+      if (state.options && state.options.shallow && !isShallowRoutingPossible(state.asPath)) {
+        state.options.shallow = false;
+      }
+
+      newRoute = {
+        href: state.href,
+        asPath: state.asPath,
+        options: {
+          shallow: isShallowRoute(state.options),
+        },
+      };
+    } else {
+      const { pathname, search, hash } = window.location;
+
+      newRoute = {
+        href: pathname || "/",
+        asPath: pathname + search + hash || "/",
+        options: {
+          shallow: false,
+        },
+      };
+    }
+
+    setRoute(newRoute);
+  }
 
   function scrollToHash(asPath) {
     const [, hash] = asPath.split("#");
