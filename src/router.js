@@ -1,11 +1,13 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
-
+import React, { useContext, useEffect, useMemo, useState, useRef } from "react";
+import mitt from "mitt";
 import { DYNAMIC_PAGE } from "./worker/pages";
 import { extractDynamicParams } from "./utils";
 
 const RouterContext = React.createContext();
 
 let pageCache = {};
+
+const events = mitt();
 
 export function RouterProvider({
   children,
@@ -20,6 +22,9 @@ export function RouterProvider({
   const [route, setRoute] = useState({
     href: initialPagePath,
     asPath: initialPathname + search,
+    options: {
+      shallow: false,
+    },
   });
   const [initialPath, setInitialPath] = useState(initialPathname);
   const [component, setComponent] = useState({
@@ -53,8 +58,12 @@ export function RouterProvider({
   useEffect(() => {
     async function loadNewPage() {
       const { href, asPath, options } = route;
-      
-      if (!options?.shallow) {  
+
+      const shallow = isShallowRoute(options);
+
+      events.emit("routeChangeStart", { asPath, shallow });
+
+      if (!shallow) {
         const pagePath = normalizePathname(href);
         const normalizedAsPath = normalizePathname(asPath);
 
@@ -92,6 +101,8 @@ export function RouterProvider({
           setTimeout(() => scrollToHash(asPath), 0);
         }
       }
+
+      events.emit("routeChangeComplete", { asPath: route.asPath, shallow });
     }
 
     if (initialPath === route.asPath) {
@@ -100,6 +111,14 @@ export function RouterProvider({
 
     loadNewPage();
   }, [route, initialPath]);
+
+  function isShallowRoute(options) {
+    if (options?.shallow === true) {
+      return true;
+    }
+
+    return false;
+  }
 
   function generatePagePropsExpiry(seconds) {
     if (seconds === null) {
@@ -137,6 +156,8 @@ export function RouterProvider({
       options.shallow = false;
     }
 
+    const shallow = isShallowRoute(options);
+
     // Blank this out so any return trips to the original component re-fetches props.
     setInitialPath("");
 
@@ -146,7 +167,9 @@ export function RouterProvider({
       options,
     });
 
-    window.history.pushState({ href, asPath }, null, asPath);
+    events.emit("beforeHistoryChange", { asPath, shallow });
+
+    window.history.pushState({ href, asPath, options: { shallow: shallow } }, null, asPath);
   }
 
   function isShallowRoutingPossible(asPath) {
@@ -186,34 +209,52 @@ export function RouterProvider({
   }
 
   useEffect(() => {
-    function handlePopState(e) {
-      let newRoute = {};
-
-      const { state } = e;
-
-      if (state) {
-        newRoute = {
-          href: state.href,
-          asPath: state.asPath,
-        };
-      } else {
-        const { pathname, search, hash } = window.location;
-
-        newRoute = {
-          href: pathname || "/",
-          asPath: pathname + search + hash || "/",
-        };
-      }
-
-      setRoute(newRoute);
-    }
-
-    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("popstate", (e) => handlePopStateRef.current(e));
 
     return () => {
-      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("popstate", (e) => handlePopStateRef.current(e));
     };
   }, [setRoute]);
+
+  // Create a ref to store the pop state function. Gets round an issue regarding the event
+  // listener not having access to the latest useState info if function passed directly.
+  const handlePopStateRef = useRef(handlePopState);
+  
+  // Make sure its updated on each render
+  handlePopStateRef.current = handlePopState;
+
+  function handlePopState(e) {     
+    let newRoute = {};
+
+    const { state } = e;
+
+    if (state) {
+      // If shallow routing = true but not possible then set to false
+      if (state.options && state.options.shallow && !isShallowRoutingPossible(state.asPath)) {
+        state.options.shallow = false;
+      }
+
+      newRoute = {
+        href: state.href,
+        asPath: state.asPath,
+        options: {
+          shallow: isShallowRoute(state.options),
+        },
+      };
+    } else {
+      const { pathname, search, hash } = window.location;
+
+      newRoute = {
+        href: pathname || "/",
+        asPath: pathname + search + hash || "/",
+        options: {
+          shallow: false,
+        },
+      };
+    }
+
+    setRoute(newRoute);
+  }
 
   function scrollToHash(asPath) {
     const [, hash] = asPath.split("#");
@@ -245,6 +286,7 @@ export function RouterProvider({
     reload,
     prefetch,
     query,
+    events,
   };
 
   return (
