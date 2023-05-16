@@ -105,7 +105,7 @@ export function RouterProvider({
       events.emit("routeChangeComplete", { asPath: route.asPath, shallow });
     }
 
-    if (initialPath === route.asPath) {
+    if (initialPath === removeQueryString(route.asPath)) {
       return;
     }
 
@@ -275,6 +275,16 @@ export function RouterProvider({
     if (nameEl) {
       nameEl.scrollIntoView();
     }
+  }
+
+  function removeQueryString(path) {
+    const index = path.indexOf('?');
+
+    if (index !== -1) {
+      return path.substring(0, index);
+    }
+
+    return path;
   }
 
   const router = {
