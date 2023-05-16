@@ -1,11 +1,7 @@
+compatibility_date = "2022-04-05"
 name = "with-firebase"
-type = "webpack"
-account_id = ""
 workers_dev = true
-route = ""
-zone_id = ""
-webpack_config = "node_modules/flareact/webpack"
+main = "./worker/script.js"
 
 [site]
 bucket = "out"
-entry-point = "./"

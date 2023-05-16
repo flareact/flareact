@@ -1,11 +1,13 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
-
+import React, { useContext, useEffect, useMemo, useState, useRef } from "react";
+import mitt from "mitt";
 import { DYNAMIC_PAGE } from "./worker/pages";
 import { extractDynamicParams } from "./utils";
 
 const RouterContext = React.createContext();
 
 let pageCache = {};
+
+const events = mitt();
 
 export function RouterProvider({
   children,
@@ -20,6 +22,9 @@ export function RouterProvider({
   const [route, setRoute] = useState({
     href: initialPagePath,
     asPath: initialPathname + search,
+    options: {
+      shallow: false,
+    },
   });
   const [initialPath, setInitialPath] = useState(initialPathname);
   const [component, setComponent] = useState({
@@ -48,39 +53,72 @@ export function RouterProvider({
   useEffect(() => {
     // On initial page load, replace history state with format expected by router
     window.history.replaceState(route, null, route.asPath);
-  }, [])
+  }, []);
 
   useEffect(() => {
     async function loadNewPage() {
-      const { href, asPath, scroll } = route;
-      const pagePath = normalizePathname(href);
-      const normalizedAsPath = normalizePathname(asPath);
+      const { href, asPath, options } = route;
 
-      if ( !pageCache[normalizedAsPath] || hasPagePropsExpired(pageCache[normalizedAsPath].expiry)) {
-        const page = await pageLoader.loadPage(pagePath);
-        const { pageProps } = await pageLoader.loadPageProps(normalizedAsPath);
-        const revalidateSeconds = getRevalidateValue(pageProps);
-        const expiry = generatePagePropsExpiry(revalidateSeconds);
+      const shallow = isShallowRoute(options);
 
-        pageCache[normalizedAsPath] = {
-          expiry: expiry,
-          Component: page,
-          pageProps,
-        };
+      events.emit("routeChangeStart", { asPath, shallow });
+
+      if (!shallow) {
+        const pagePath = normalizePathname(href);
+        const normalizedAsPath = normalizePathname(asPath);
+
+        if (
+          !pageCache[normalizedAsPath] ||
+          hasPagePropsExpired(pageCache[normalizedAsPath].expiry)
+        ) {
+          const page = await pageLoader.loadPage(pagePath);
+          const { pageProps } = await pageLoader.loadPageProps(
+            normalizedAsPath
+          );
+
+          if (pageProps.redirect && pageProps.redirect.destination) {
+            if (pageProps.redirect.destination.startsWith("/")) {
+              router.push(pageProps.redirect.destination, pageProps.redirect.as);
+            } else {
+              window.location.href = pageProps.redirect.as;
+            }
+
+            return;
+          }
+          
+          const revalidateSeconds = getRevalidateValue(pageProps);
+          const expiry = generatePagePropsExpiry(revalidateSeconds);
+
+          pageCache[normalizedAsPath] = {
+            expiry: expiry,
+            Component: page,
+            pageProps,
+          };
+        }
+
+        setComponent(pageCache[normalizedAsPath]);
+        if (options && options.scroll) {
+          setTimeout(() => scrollToHash(asPath), 0);
+        }
       }
 
-      setComponent(pageCache[normalizedAsPath]);
-      if (scroll) {
-        setTimeout(() => scrollToHash(asPath), 0);
-      }
+      events.emit("routeChangeComplete", { asPath: route.asPath, shallow });
     }
 
-    if (initialPath === route.asPath) {
+    if (initialPath === removeQueryString(route.asPath)) {
       return;
     }
 
     loadNewPage();
   }, [route, initialPath]);
+
+  function isShallowRoute(options) {
+    if (options?.shallow === true) {
+      return true;
+    }
+
+    return false;
+  }
 
   function generatePagePropsExpiry(seconds) {
     if (seconds === null) {
@@ -110,29 +148,50 @@ export function RouterProvider({
     return pageProps.revalidate;
   }
 
-  function push(href, as, scroll) {
+  function push(href, as, options) {
     const asPath = as || href;
 
-    setRoute({
-      href,
-      asPath,
-      scroll
-    });
+    // If shallow routing = true but not possible then set to false
+    if (options && options.shallow && !isShallowRoutingPossible(asPath)) {
+      options.shallow = false;
+    }
+
+    const shallow = isShallowRoute(options);
 
     // Blank this out so any return trips to the original component re-fetches props.
     setInitialPath("");
 
-    window.history.pushState({ href, asPath }, null, asPath);
+    setRoute({
+      href,
+      asPath,
+      options,
+    });
+
+    events.emit("beforeHistoryChange", { asPath, shallow });
+
+    window.history.pushState({ href, asPath, options: { shallow: shallow } }, null, asPath);
+  }
+
+  function isShallowRoutingPossible(asPath) {
+    const normalizedCurrentAsPath = normalizePathname(
+      route.asPath.split("?")[0]
+    );
+    const normalizedNewAsPath = normalizePathname(asPath.split("?")[0]);
+
+    return (
+      // If the route is already rendered on the screen.
+      normalizedCurrentAsPath === normalizedNewAsPath
+    );
   }
 
   // Navigate back in history
   function back() {
-    window.history.back()
+    window.history.back();
   }
 
   // Reload the current URL
   function reload() {
-    window.location.reload()
+    window.location.reload();
   }
 
   function prefetch(href, as, { priority } = {}) {
@@ -150,34 +209,52 @@ export function RouterProvider({
   }
 
   useEffect(() => {
-    function handlePopState(e) {
-      let newRoute = {};
-
-      const { state } = e;
-
-      if (state) {
-        newRoute = {
-          href: state.href,
-          asPath: state.asPath,
-        };
-      } else {
-        const { pathname, search, hash } = window.location;
-
-        newRoute = {
-          href: pathname || "/",
-          asPath: pathname + search + hash || "/",
-        };
-      }
-
-      setRoute(newRoute);
-    }
-
-    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("popstate", (e) => handlePopStateRef.current(e));
 
     return () => {
-      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("popstate", (e) => handlePopStateRef.current(e));
     };
   }, [setRoute]);
+
+  // Create a ref to store the pop state function. Gets round an issue regarding the event
+  // listener not having access to the latest useState info if function passed directly.
+  const handlePopStateRef = useRef(handlePopState);
+  
+  // Make sure its updated on each render
+  handlePopStateRef.current = handlePopState;
+
+  function handlePopState(e) {     
+    let newRoute = {};
+
+    const { state } = e;
+
+    if (state) {
+      // If shallow routing = true but not possible then set to false
+      if (state.options && state.options.shallow && !isShallowRoutingPossible(state.asPath)) {
+        state.options.shallow = false;
+      }
+
+      newRoute = {
+        href: state.href,
+        asPath: state.asPath,
+        options: {
+          shallow: isShallowRoute(state.options),
+        },
+      };
+    } else {
+      const { pathname, search, hash } = window.location;
+
+      newRoute = {
+        href: pathname || "/",
+        asPath: pathname + search + hash || "/",
+        options: {
+          shallow: false,
+        },
+      };
+    }
+
+    setRoute(newRoute);
+  }
 
   function scrollToHash(asPath) {
     const [, hash] = asPath.split("#");
@@ -200,6 +277,16 @@ export function RouterProvider({
     }
   }
 
+  function removeQueryString(path) {
+    const index = path.indexOf('?');
+
+    if (index !== -1) {
+      return path.substring(0, index);
+    }
+
+    return path;
+  }
+
   const router = {
     component,
     pathname: route.href,
@@ -209,6 +296,7 @@ export function RouterProvider({
     reload,
     prefetch,
     query,
+    events,
   };
 
   return (

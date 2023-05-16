@@ -46,3 +46,46 @@ module.exports = {
   },
 };
 ```
+
+## Redirects
+
+With redirect you can redirect an incoming request path to a different destination path.
+
+Example usage of `redirects`:
+
+```js
+module.exports = {
+  async redirects() {
+    return [
+      {
+        source: '/about',
+        destination: '/',
+        permanent: true,
+      },
+    ]
+  },
+};
+```
+It expects an array to be returned holding objects with source, destination, and permanent properties:
+
+- `source` is the incoming request path pattern.
+- `destination` is the location you want to route to. This can either be a path or a full url.
+- `permanent` if the redirect is permanent or not.
+
+URL parameters provided in the source request can be transferred to the redirect like so:
+
+```js
+module.exports = {
+  async redirects() {
+    return [
+      {
+        source: '/blog/[slug]',
+        destination: '/news/[slug]',
+        permanent: true,
+      },
+    ]
+  },
+};
+```
+
+Note that if redirects for a page are defined in both the edge props and the custom webpack config then the latter will be given priority.

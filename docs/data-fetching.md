@@ -123,6 +123,49 @@ export default function Posts({ posts, notFound }) {
 }
 ```
 
+## Redirects
+
+Dynamic redirects can be returned if required, for example to prevent an unauthenticated user from accessing a secure page.
+
+```js
+export async function getEdgeProps() {
+  const signedIn = await isSignedIn();
+
+  if (!signedIn) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false
+      }
+    };
+  }
+
+  return {
+    props: {}
+  }
+}
+```
+
+The redirect object should contain two parameters:
+
+- `destination` is the location you want to route to. This can either be a path or a full url.
+- `permanent` if the redirect is permanent or not.
+
+Redirects will work on both hard and soft loads. URL parameters can be used in the destination provided they are part of the original request url.
+
+```js
+export async function getEdgeProps() {
+  return {
+    redirect: {
+      destination: "/news/[slug]",
+      permanent: true
+    }
+  };
+}
+```
+
+Note that if redirects for a page are defined in both the edge props and the custom webpack config then the latter will be given priority.
+
 ## Additional Notes
 
 A couple things to note about `getEdgeProps`:
